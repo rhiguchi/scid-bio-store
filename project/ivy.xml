@@ -32,6 +32,7 @@
 	</configurations>
 	
 	<dependencies>
+		<dependency org="jp.scid" name="scid-bio" rev="0.2.1" conf="default"/>
 		<dependency org="commons-io" name="commons-io" rev="2.3" conf="test->default"/>
 		<dependency org="junit" name="junit" rev="4.10" conf="test->default"/>
 		<dependency org="org.mockito" name="mockito-all" rev="1.8.4"  conf="test->default"/>
