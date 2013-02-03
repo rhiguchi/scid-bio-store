@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ====================================================================== 
+     2012/01/26 16:31:05                                                        
+
+     ScienceDesign GUI    
+     GUI library
+                   
+     Higuchi Ryusuke                                                                
+     ====================================================================== -->
+<project name="scid-bio-store" default="compile" xmlns:ivy="antlib:org.apache.ivy.ant">
+    <description>
+            SciendeDesign Bio library
+    </description>
+
+    <property name="module.version.target" value="0.1" />
+    
+    <property file="project/build.properties"/>
+    <property file="project/build.default.properties"/>
+
+    <!-- Classpath -->
+    <path id="run.test.classpath">
+        <pathelement location="${classes.test.dir}" />
+        <pathelement location="${src.test.resources.dir}" />
+    </path>
+
+    <!-- - - - - - - - - - - - - - - - - - 
+          target: init                      
+         - - - - - - - - - - - - - - - - - -->
+    <target name="init">
+        <mkdir dir="${src.main.resources.dir}"/>
+    </target>
+
+    <!-- ================================= 
+          target: clean              
+         ================================= -->
+    <target name="clean" description="clean the project">
+        <delete includeemptydirs="true" dir="${build.dir}"/>
+    </target>
+
+    <!-- ================================= 
+          target: Resolve dependency              
+         ================================= -->
+    <target name="resolve" description="resolve dependencies with ivy">
+        <ivy:resolve file="${ivy.file}"/>
+
+        <!-- Class Paths -->
+        <ivy:cachepath pathid="lib.compile.classpath" conf="compile" />
+        <ivy:cachepath pathid="lib.test.classpath" conf="test" />
+    </target>
+
+    <!-- ================================= 
+          target: compile              
+         ================================= -->
+    <target name="compile" depends="init, resolve" description="compile the project">
+        <mkdir dir="${classes.main.dir}"/>
+
+        <copy todir="${classes.main.dir}">
+            <fileset dir="${src.main.java.dir}" excludes="**/*.java" />
+            <fileset dir="${src.main.resources.dir}"/>
+        </copy>
+        
+        <javac destdir="${classes.main.dir}" source="1.6" target="1.6"
+                encoding="UTF-8" debug="true" includeantruntime="false">
+            <compilerarg value="-Xlint:all"/>
+            <src path="${src.main.java.dir}" />
+            <classpath refid="lib.compile.classpath" />
+        </javac>
+    </target>
+
+    <!-- ================================= 
+          target: create jar file              
+         ================================= -->
+    <target name="package" depends="version, compile" description="make a jar file for this project">
+        <jar destfile="${package.file}">
+            <fileset dir="${classes.main.dir}" />
+            <fileset dir="${src.main.resources.dir}" />
+            <manifest>
+                <attribute name="Built-By" value="${user.name}" />
+                <attribute name="Build-Version" value="${version}" />
+            </manifest>
+        </jar>
+    </target>
+
+    <!-- ================================= 
+          target: Compile for test              
+         ================================= -->
+    <target name="test-compile" depends="compile" description="description">
+        <mkdir dir="${classes.test.dir}"/>
+
+        <copy todir="${classes.test.dir}">
+            <fileset dir="${src.test.java.dir}" excludes="**/*.java" />
+            <fileset dir="${src.test.resources.dir}"/>
+        </copy>
+        
+        <javac destdir="${classes.test.dir}" source="1.6" target="1.6"
+                encoding="UTF-8" debug="true" includeantruntime="false">
+            <src path="${src.test.java.dir}" />
+            <classpath path="${classes.main.dir}" />
+            <classpath refid="lib.test.classpath" />
+        </javac>
+    </target>
+
+    <!-- ================================= 
+          target: test              
+         ================================= -->
+    <target name="test" depends="test-compile, package" description="Run all tests">
+        <mkdir dir="${test.report.dir}"/>
+        <junit printsummary="yes" >
+            <classpath refid="lib.test.classpath" />
+            <classpath refid="run.test.classpath" />
+            <classpath path="${package.file}" />
+
+            <batchtest todir="${test.report.dir}">
+                <formatter type="xml" usefile="true"/>
+                <fileset dir="${classes.test.dir}" />
+            </batchtest>
+        </junit>
+    </target>
+
+    <!-- ================================= 
+           target: publish-local
+          ================================= -->
+    <target name="publish-local" depends="clean, local-version, package"
+            description="publish this project in the local ivy repository">
+        <ivy:publish artifactspattern="${build.dir}/[artifact].[ext]"
+            resolver="local"
+            pubrevision="${version}"
+            pubdate="${now}"
+            status="integration"
+            forcedeliver="true">
+        </ivy:publish>
+        <echo message="project ${ant.project.name} published locally with version ${version}" />
+    </target>
+
+    <!-- ================================= 
+      target: clean-local              
+     ================================= -->
+    <target name="clean-local" description="cleans the local repository for the current module">
+        <ivy:info file="${ivy.file}" />
+        <delete dir="${ivy.local.default.root}/${ivy.organisation}/${ivy.module}" />
+    </target>
+
+    <!-- ================================= 
+          target: publish              
+         ================================= -->
+    <target name="publish" depends="clean, package, test" description="publish this project in the ivy repository">
+        <ivy:publish
+            artifactspattern="${build.dir}/[artifact].[ext]"
+            resolver="shared"
+            pubrevision="${version}"
+            status="release" />
+        <echo message="project ${ant.project.name} released with version ${version}" />
+    </target>
+
+    <target name="ivy-new-version" unless="ivy.new.revision">
+        <!-- default module version prefix value -->
+        <property name="module.version.prefix" value="${module.version.target}." />
+
+        <!-- asks to ivy an available version number -->
+        <ivy:info file="${ivy.file}" />
+        <ivy:buildnumber
+            organisation="${ivy.organisation}" module="${ivy.module}"
+            revision="${module.version.prefix}" defaultBuildNumber="1" revSep="" />
+    </target>
+
+    <target name="local-version">
+        <tstamp>
+            <format property="now" pattern="yyyyMMddHHmmss" />
+        </tstamp>
+        <property name="ivy.new.revision" value="${module.version.target}-local-${now}" />
+    </target>
+
+    <target name="version" depends="ivy-new-version">
+        <!-- create version file in classpath for later inclusion in jar -->
+        <mkdir dir="${classes.main.dir}" />
+        <echo message="version=${ivy.new.revision}"
+            file="${classes.main.dir}/${ant.project.name}.properties" append="false" />
+
+        <!-- load generated version properties file -->
+        <property file="${classes.main.dir}/${ant.project.name}.properties" />
+    </target>
+</project>
+
