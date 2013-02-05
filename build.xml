@@ -30,9 +30,27 @@
         <ivy:resolve conf="h2" />
         <ivy:cachepath pathid="lib.h2.classpath" conf="h2" />
         
-        <java fork="true" spawn="${h2.server.spawn}" classname="org.h2.tools.Server">
+        <java fork="true" spawn="true" classname="org.h2.tools.Server">
             <classpath refid="lib.h2.classpath"></classpath>
+            <jvmarg value="-Dfile.encoding=UTF-8"/>
             <arg line="${h2.server.argline}"/>
+        </java>
+        
+        <echo level="info" message="start H2 database server" />
+    </target>
+
+    <!-- ================================= 
+          target: h2-server              
+         ================================= -->
+    <target name="h2-server-stop" description="stop h2 database server">
+        <ivy:resolve conf="h2" />
+        <ivy:cachepath pathid="lib.h2.classpath" conf="h2" />
+        
+        <java classname="org.h2.tools.Server" failonerror="yes">
+            <classpath refid="lib.h2.classpath"></classpath>
+            <jvmarg value="-Dfile.encoding=UTF-8"/>
+            <arg value="-tcpShutdown"/>
+            <arg value="tcp://localhost:9092"/>
         </java>
     </target>
     
