@@ -23,6 +23,19 @@
         <pathelement location="${src.test.resources.dir}" />
     </path>
 
+    <!-- ================================= 
+          target: h2-server              
+         ================================= -->
+    <target name="h2-server-start" description="run h2 database server">
+        <ivy:resolve conf="h2" />
+        <ivy:cachepath pathid="lib.h2.classpath" conf="h2" />
+        
+        <java fork="true" spawn="${h2.server.spawn}" classname="org.h2.tools.Server">
+            <classpath refid="lib.h2.classpath"></classpath>
+            <arg line="${h2.server.argline}"/>
+        </java>
+    </target>
+    
     <!-- - - - - - - - - - - - - - - - - - 
           target: init                      
          - - - - - - - - - - - - - - - - - -->
