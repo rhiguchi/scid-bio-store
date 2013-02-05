@@ -27,6 +27,7 @@
 	
 	<configurations defaultconf="default">
 		<conf name="h2" visibility="private"/>
+		<conf name="jooq-codegen" extends="h2" visibility="private"/>
 		<conf name="default"/>
 		<conf name="compile" extends="default" visibility="private"/>
 		<conf name="test" extends="default" visibility="private"/>
@@ -34,8 +35,13 @@
 	
 	<dependencies>
 	    <dependency org="com.h2database" name="h2" rev="1.3.160" conf="h2,default->default" />
-	    <dependency org="org.jooq" name="jooq" rev="2.6.0"/>
+	    
+	    <dependency org="org.jooq" name="jooq" rev="2.6.0" conf="default,jooq-codegen->default"/>
+	    <dependency org="org.jooq" name="jooq-meta" rev="2.6.0" conf="jooq-codegen->default"/>
+	    <dependency org="org.jooq" name="jooq-codegen" rev="2.6.0" conf="jooq-codegen->default"/>
+	    
 		<dependency org="jp.scid" name="scid-bio" rev="0.2.1"/>
+		
 		<dependency org="commons-io" name="commons-io" rev="2.3" conf="test->default"/>
 		<dependency org="junit" name="junit" rev="4.10" conf="test->default"/>
 		<dependency org="org.mockito" name="mockito-all" rev="1.8.4"  conf="test->default"/>

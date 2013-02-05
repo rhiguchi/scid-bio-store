@@ -53,6 +53,43 @@
             <arg value="tcp://localhost:9092"/>
         </java>
     </target>
+
+    <!-- ================================= 
+          target: jooq-codegen              
+         ================================= -->
+    <target name="generate-jooq-classes" description="generate jooq code">
+        <ivy:retrieve conf="jooq-codegen" symlink="true" />
+        <ivy:cachepath pathid="lib.jooq-codegen.classpath" conf="jooq-codegen" />
+
+        <taskdef name="generate-classes" classname="org.jooq.util.GenerationTask" >
+            <classpath>
+                <fileset dir="${lib.dir}">
+                    <include name="jooq-*.jar"/>
+                    <include name="h2-*.jar"/>
+                </fileset>
+            </classpath>
+        </taskdef>
+
+        <generate-classes 
+            jdbcdriver="org.h2.Driver"
+            jdbcurl="jdbc:h2:tcp://localhost/~/GenomeMuseum/lib"
+            jdbcuser="genomemuseum"
+            jdbcpassword=""
+            generator="org.jooq.util.DefaultGenerator"
+            generatordatabase="org.jooq.util.h2.H2Database"
+            generatordatabaseinputschema="PUBLIC"
+            generatordatabaseexcludes="INFORMATION_SCHEMA.*"
+            generatortargetpackage="jp.scid.bio.store.jooq"
+            generatortargetdirectory="${src.main.java.dir}"/>
+    </target>
+
+    <!-- ================================= 
+          target: clean-jooq-classes              
+         ================================= -->
+    <target name="clean-jooq-classes" description="delete generated jooq code">
+        <delete includeemptydirs="true" dir="${src.main.java.dir}/jp/scid/bio/store/jooq">
+	</delete>
+    </target>
     
     <!-- - - - - - - - - - - - - - - - - - 
           target: init                      
