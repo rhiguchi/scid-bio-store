@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<configuration xmlns="http://www.jooq.org/xsd/jooq-codegen-2.5.0.xsd">
+  <!-- Configure the database connection here -->
+  <jdbc>
+    <driver>org.h2.Driver</driver>
+    <url>jdbc:h2:tcp://localhost/~/GenomeMuseum/lib</url>
+    <user>genomemuseum</user>
+    <password></password>
+  </jdbc>
+
+  <generator>
+    <!-- The default code generator. You can override this one, to generate your own code style
+         Defaults to org.jooq.util.DefaultGenerator -->
+    <name>org.jooq.util.DefaultGenerator</name>
+
+    <database>
+      <!-- The database type. The format here is:
+           org.util.[database].[database]Database -->
+      <name>org.jooq.util.h2.H2Database</name>
+
+      <!-- The database schema (or in the absence of schema support, in your RDBMS this
+           can be the owner, user, database name) to be generated -->
+      <inputSchema>PUBLIC</inputSchema>
+
+      <!-- All elements that are generated from your schema (several Java regular expressions, separated by comma)
+           Watch out for case-sensitivity. Depending on your database, this might be important! -->
+      <includes>.*</includes>
+
+      <!-- All elements that are excluded from your schema (several Java regular expressions, separated by comma).
+              Excludes match before includes -->
+      <excludes></excludes>
+    </database>
+
+    <target>
+      <!-- The destination package of your generated classes (within the destination directory) -->
+      <packageName>jp.scid.bio.store.jooq</packageName>
+
+      <!-- The destination directory of your generated classes -->
+      <directory>src/main/java</directory>
+    </target>
+  </generator>
+</configuration>

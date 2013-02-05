@@ -61,26 +61,14 @@
         <ivy:retrieve conf="jooq-codegen" symlink="true" />
         <ivy:cachepath pathid="lib.jooq-codegen.classpath" conf="jooq-codegen" />
 
-        <taskdef name="generate-classes" classname="org.jooq.util.GenerationTask" >
-            <classpath>
-                <fileset dir="${lib.dir}">
-                    <include name="jooq-*.jar"/>
-                    <include name="h2-*.jar"/>
-                </fileset>
-            </classpath>
-        </taskdef>
 
-        <generate-classes 
-            jdbcdriver="org.h2.Driver"
-            jdbcurl="jdbc:h2:tcp://localhost/~/GenomeMuseum/lib"
-            jdbcuser="genomemuseum"
-            jdbcpassword=""
-            generator="org.jooq.util.DefaultGenerator"
-            generatordatabase="org.jooq.util.h2.H2Database"
-            generatordatabaseinputschema="PUBLIC"
-            generatordatabaseexcludes="INFORMATION_SCHEMA.*"
-            generatortargetpackage="jp.scid.bio.store.jooq"
-            generatortargetdirectory="${src.main.java.dir}"/>
+        <java fork="true" classname="org.jooq.util.GenerationTool" failonerror="yes">
+            <jvmarg value="-Dfile.encoding=UTF-8"/>
+            <classpath refid="lib.jooq-codegen.classpath"></classpath>
+            <classpath location="/"></classpath>
+            <arg value="${project.dir}/jooq-codegen.xml"/>
+        </java>
+        
     </target>
 
     <!-- ================================= 
