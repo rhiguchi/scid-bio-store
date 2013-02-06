@@ -52,7 +52,7 @@ public class FileLibraryTest {
     }
 
     @Test
-    public void test() throws URISyntaxException, UnknownSequenceFormatException, IOException, ParseException {
+    public void add() throws URISyntaxException, UnknownSequenceFormatException, IOException, ParseException {
         URL resource = getClass().getResource("NC_009347.gbk");
         File file = new File(resource.toURI());
         
