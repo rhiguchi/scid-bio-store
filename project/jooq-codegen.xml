@@ -38,5 +38,9 @@
       <!-- The destination directory of your generated classes -->
       <directory>src/main/java</directory>
     </target>
+    
+    <generate>
+      <deprecated>false</deprecated>
+    </generate>
   </generator>
 </configuration>
