@@ -19,7 +19,7 @@ CREATE TABLE genetic_sequence
 	file_type int NOT NULL,
 	file_uri varchar NOT NULL,
 	PRIMARY KEY (id)
-)
+);
 
 
 /* Comments */
