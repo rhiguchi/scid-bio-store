@@ -1,0 +1,137 @@
+LOCUS       NC_010940               3533 bp    DNA     circular BCT 20-JUN-2008
+DEFINITION  Actinobacillus pleuropneumoniae serovar 7 str. AP76 plasmid APP7_C,
+            complete sequence.
+ACCESSION   NC_010940
+VERSION     NC_010940.1  GI:190151401
+KEYWORDS    .
+SOURCE      Actinobacillus pleuropneumoniae serovar 7 str. AP76
+  ORGANISM  Actinobacillus pleuropneumoniae serovar 7 str. AP76
+            Bacteria; Proteobacteria; Gammaproteobacteria; Pasteurellales;
+            Pasteurellaceae; Actinobacillus.
+REFERENCE   1  (bases 1 to 3533)
+  AUTHORS   Buettner,F., Martinez-Arias,R., Goesmann,A., Baltes,N.,
+            Tegetmeyer,H., Singh,M. and Gerlach,G.F.
+  TITLE     Genome and proteome analysis of A. pleuropneumoniae serotype 7
+  JOURNAL   Unpublished
+REFERENCE   2  (bases 1 to 3533)
+  CONSRTM   NCBI Genome Project
+  TITLE     Direct Submission
+  JOURNAL   Submitted (11-JUN-2008) National Center for Biotechnology
+            Information, NIH, Bethesda, MD 20894, USA
+REFERENCE   3  (bases 1 to 3533)
+  AUTHORS   Linke,B.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (21-MAY-2008) Centrum fuer Biotechnologie, Universitaet
+            Bielefeld, Universitaetsstrasse 27, Bielefeld 33615, Germany
+COMMENT     PROVISIONAL REFSEQ: This record has not yet been subject to final
+            NCBI review. The reference sequence was derived from CP001092.
+            Source DNA and bacteria are available from Gerald-F. Gerlach,
+            email: gfgerlach@gmx.de.
+            COMPLETENESS: full length.
+FEATURES             Location/Qualifiers
+     source          1..3533
+                     /organism="Actinobacillus pleuropneumoniae serovar 7 str.
+                     AP76"
+                     /mol_type="genomic DNA"
+                     /strain="AP76"
+                     /serovar="7"
+                     /db_xref="taxon:537457"
+                     /plasmid="APP7_C"
+     gene            complement(1706..3112)
+                     /gene="mobA"
+                     /locus_tag="APP7_C0001"
+                     /db_xref="GeneID:6398054"
+     CDS             complement(1706..3112)
+                     /gene="mobA"
+                     /locus_tag="APP7_C0001"
+                     /codon_start=1
+                     /transl_table=11
+                     /product="Mobilization protein MobA"
+                     /protein_id="YP_001969926.1"
+                     /db_xref="GI:190151402"
+                     /db_xref="GeneID:6398054"
+                     /translation="MIVKFFKKHGKGKASSCKACVDYLLNKPDDTAQILQGDPRLSQS
+                     IADSLDFNNTYTAGCLSFEESDLPEIQKREIMARFEKAMFAGLEPEQYNIAWVQHTDK
+                     GRLELNFVIPNVEMTSGKRLQPYYDRADRPLAENFKQVINHEYSLSDPNNPIKQKNLI
+                     DRKDLPTDKKQALQAITDGLTALANAGQINDRQDVINALERAGFEIARITPKNLSIKT
+                     DGQNLRLKGAFYEQDFRFSTDLSADITERAREYKRDSAERYQTARAKLDTAVTARREQ
+                     FSRKYPNRAGEIDKKYRENVSLADPNRLDDINLDSHNRRRFDVAGEERLSRDDRMAKL
+                     SRDSQRAEWGDQAINLQNGERDKALCSSGQGFYQLNVGREFENNRSSRNQETGEKING
+                     DRIRTTLRENLENLARTARNRASEIIERIREFASRKRLDHSTIQRNQQAINDITEFNK
+                     QLETVISQRKRQSRGISR"
+     gene            complement(3109..3414)
+                     /gene="mobC"
+                     /locus_tag="APP7_C0002"
+                     /db_xref="GeneID:6398055"
+     CDS             complement(3109..3414)
+                     /gene="mobC"
+                     /locus_tag="APP7_C0002"
+                     /codon_start=1
+                     /transl_table=11
+                     /product="Mobilization protein MobC"
+                     /protein_id="YP_001969927.1"
+                     /db_xref="GI:190151403"
+                     /db_xref="GeneID:6398055"
+                     /translation="MKREKEIKIRLTENEYQALLERKTKARLAEWVREVALEQQPKRQ
+                     PKVIDPALLFELNRIGVNLNQIARQCNSQKPSIDLVSVLATLREIEKNLKKLRELSL"
+ORIGIN      
+        1 aaaagacaat agtacaccaa aagccccgag agtgatatat aaaaatcagc ggagccgata
+       61 ggcgacttcg ttttattagg cgaacatcgt gagcctttga accaaaataa aaataaaaaa
+      121 attttattat tagggaagtg gttattgtgg gcggtaggtt tttagtgttg gaaagctgtt
+      181 gtaaagctcg tgggtaactc gcagagttat ccatcagctt ttcaatggct tttcaatacg
+      241 acccgtaggg gaaaaaccgt taaaccgtcc acattaacta ctgacccaaa aaaagaacgc
+      301 tttttactaa aagatttcta ttcggttctc aaatgttgcg tgaatggggc aacaataaaa
+      361 cgttgtggcg tttatcaggg tgggaattgc agaccttaca atcaattccg ctgtaacctt
+      421 aaatctcgct tatcaggtgt gggctgtact acttaaagac cgtgccacga aacggagaca
+      481 gagcctagat ttcgttctag gtacgttatc acttctacgc ctgtttattc ttccgaagtc
+      541 cgagctgaag actgtttgat ttaaggggtg cgtttgagtt ctatcccttt cgggtgcttg
+      601 ttgaatggta ttttaggtgg acgccagcac tgttttcgat ttaactactt gaacaacgcc
+      661 ccaccctttg ctatgattag attgcttagg tctggatcat agcaaagaac gcacattgaa
+      721 cagattatag gaaaagggat cgaatgtcaa aagttcgatc cctttttctt ttgcaatgca
+      781 ttggtattaa aggctttaag gtgtatttta ttaaaatctg tacacctttg tgaaaatcca
+      841 tacactttct taccgtgtaa ttttatgaaa tttcgtgcac ctttctgcta acgccctgcg
+      901 gttgttagac taaaaaagcc attgaaagca agtttcaacg gctttttcag tcccgaataa
+      961 aacaaaaccg ccctgttagg cggttatgtg ataaaatctt ccttgtgcta tcggcaaacg
+     1021 gtgtaacgtg tccttagcac gttgcccgat tgccttaggc ttatagcact aagggggtga
+     1081 tctatgtgaa cgcattacaa tacttcgtaa tgatactact gctcaccgta gtagttgcgg
+     1141 tattaggttt tcgagttctt accattctcg acctaattac ttacatcttg aatagattgt
+     1201 cctaagacaa tcgggaaggg ggtagttggt agctatcccc gacctttttc cattgtatgc
+     1261 cctatcccct gatttttcaa gttatctact tttcaaataa tcttattctt aattcgtcta
+     1321 gagttttaat ttctccagaa acatattttt tcagtaatac ttcacattct ttagatggat
+     1381 attccccttc taatgcaaaa ctggctaaag cgttttttat atgaaattcc cgtctagcta
+     1441 aaatttcagg tgttaatttt tcatcatctt gcataaatcc ccctaaaatt tatatttatt
+     1501 aaatttttct ctcactaact tagaaagttc ttcgtagtca atttcttctg gtttaagagc
+     1561 gtatagcttg ttacgcaagc ctgctaataa ctcgctatct tcgtttctac cacctgtttg
+     1621 agccacgatt aagccgagtg tttgagaaat accatttatt aaactgtctt tttccataag
+     1681 tgttgccata attctccccc ttgtgttatc tgcttatacc cctgctttgt cttttgcgtt
+     1741 gagatattac cgtttcaagc tgtttattaa actctgtaat gtcgttaatt gcttgctgat
+     1801 ttcgttgtat tgttgaatga tcaaggcgtt ttcggctcgc aaactctcta attctttcga
+     1861 taatttcact cgctctgttt cttgctgttc tagcaaggtt ttcaaggttt tctcgtaaag
+     1921 tagttctaat tcggtcgcca tttatttttt cccctgtttc ttggtttcgt gaacttcgat
+     1981 tattttcaaa ttctcgcccc acgttgagtt gataaaatcc ttgtccactg ctacacaagg
+     2041 ctttatccct ttctccgttt tgcaagttga tagcttgatc cccccactct gctctttggc
+     2101 tatctcggct gagctttgcc attcggtcat ctcttgatag gcgttcttcg cctgccacgt
+     2161 caaaacgcct gcggttatgg ctatcaaggt taatatcgtc aaggcgatta gggtcggcaa
+     2221 gcgatacatt ctcacggtat tttttatcaa tttcgcctgc tcgatttgga tattttcggc
+     2281 taaattgttc cctgcgtgct gtaactgctg tatcaagttt tgctcgtgcc gtttgatagc
+     2341 gttctgcact atctcgcttg tactctctag ctctttctgt gatgtctgct gaaaggtctg
+     2401 tgctaaatct aaaatcttgc tcatagaaag ccccttttaa tcttaaattc tgtccgtcag
+     2461 tcttgattga taggtttttt ggcgtaatgc gtgcaatttc aaaacctgca cgttctaggg
+     2521 catttataac gtcctgtcgg tcgtttatct gccctgcgtt cgctaaagct gttaaaccgt
+     2581 ccgtaatcgc ctgtaaagcc tgttttttat cggttggtag gtctttgcgg tcaatcaggt
+     2641 ttttttgctt tatagggttg tttgggtcgc ttaggctgta ttcgtggttg attacctgct
+     2701 tgaagttttc agcaagtggg cggtctgccc tgtcgtagta gggttgtagg cgttttccgc
+     2761 ttgtcatctc tacgtttggg ataacgaaat tcagctcaag cctgcctttg tcggtgtgtt
+     2821 gtacccacgc aatgttatat tgttcaggct caagccctgc aaacattgcc ttttcaaagc
+     2881 gtgccataat ctcacgcttt tgtatttcgg gtaggtcgct ttcttcaaaa gacaagcaac
+     2941 ctgcggtgta agtgttatta aaatcaagac tatcagcaat actttgtgat agtcggggat
+     3001 cgccctgcag gatttgggcg gtgtcgtcag gcttatttag taaatagtcc acgcaagcct
+     3061 tgcaactact agcttttccc ttaccgtgtt tcttaaaaaa tttaacgatc ataggctcaa
+     3121 ttctcgcaat tttttgagat ttttttcaat ttctcgcaag gtcgccaaca cgctaacaag
+     3181 gtcaatgctc ggcttttgac tgttgcattg tcgggcgatt tggttcaggt ttacgcctat
+     3241 gcggttcagc tcgaacagta acgcagggtc gattactttc ggctgtcgct taggttgctg
+     3301 ttccagggca acttcccgaa cccactccgc aagccttgct ttcgtttttc tctctaacaa
+     3361 ggcttgatac tcgttttcgg tgagcctgat ttttatctct ttctcacgtt tcataatggt
+     3421 gtccgttctt ctattttgac cgctgaaagc ggtcgggggt caagggggca aagccctttt
+     3481 gcaaggtcaa aaaggaaact cgaagagtac cctttttgtg tccttgctat tac
+//
