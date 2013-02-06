@@ -29,8 +29,8 @@ public class FileLibrary {
     private GenBankFormat genBankFormat = new GenBankFormat();
     private FastaFormat fastaFormat = new FastaFormat();
     
-    public FileLibrary(Factory create) {
-        this.create = create;
+    public FileLibrary(Factory factory) {
+        this.create = factory;
         
         dataFiles = SequenceBioDataFiles.newDefaultFormats();
     }
