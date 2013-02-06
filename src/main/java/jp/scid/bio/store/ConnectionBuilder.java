@@ -3,7 +3,7 @@ package jp.scid.bio.store;
 import org.h2.jdbcx.JdbcConnectionPool;
 
 class ConnectionBuilder {
-    String databaseNamespace = "~/scid-bio-lib/lib";
+    String databaseNamespace = "mem:";
     
     private String databaseUser = "";
     private String databasePassword = "";
