@@ -20,6 +20,7 @@ import jp.scid.bio.sequence.genbank.GenBankFormat;
 import jp.scid.bio.store.jooq.Tables;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
 
+import org.jooq.impl.EnumConverter;
 import org.jooq.impl.Factory;
 
 public class FileLibrary {
@@ -60,8 +61,8 @@ public class FileLibrary {
         Queue<GeneticSequenceRecord> records = new LinkedList<GeneticSequenceRecord>();
         GenBank data;
         while ((data = dataReader.readNext()) != null) {
-            java.sql.Date date =
-                    data.locus().date() != null ? new java.sql.Date(data.locus().date().getTime()) : null;
+            java.sql.Date date = data.locus().date() != null ?new java.sql.Date(data.locus().date().getTime()) : null;
+            SequenceUnit unit = SequenceUnit.fromLabel(data.locus().sequenceUnit());
             
             GeneticSequenceRecord record = create.insertInto(Tables.GENETIC_SEQUENCE)
                     .set(GENETIC_SEQUENCE.NAME, data.name())
@@ -70,12 +71,12 @@ public class FileLibrary {
                     .set(GENETIC_SEQUENCE.NAMESPACE, data.namespace())
                     .set(GENETIC_SEQUENCE.VERSION, data.accessionVersion())
                     .set(GENETIC_SEQUENCE.DEFINITION, data.description())
-                    .set(GENETIC_SEQUENCE.SOURCE_TEXT, data.source().value())
+                    .set(GENETIC_SEQUENCE.SOURCE, data.source().value())
                     .set(GENETIC_SEQUENCE.ORGANISM, data.source().organism())
                     .set(GENETIC_SEQUENCE.DATE, date)
-                    .set(GENETIC_SEQUENCE.UNIT, data.locus().sequenceUnit())
+                    .set(GENETIC_SEQUENCE.UNIT, unit.index())
                     .set(GENETIC_SEQUENCE.MOLECULE_TYPE, data.locus().molculeType())
-                    .set(GENETIC_SEQUENCE.FILE_TYPE, 1)
+                    .set(GENETIC_SEQUENCE.FILE_TYPE, SequenceFileType.GENBANK.dbValue())
                     .set(GENETIC_SEQUENCE.FILE_URI, file.toURI().toString())
                     .returning().fetchOne();
             records.add(record);
@@ -99,7 +100,7 @@ public class FileLibrary {
                     .set(GENETIC_SEQUENCE.NAMESPACE, data.namespace())
                     .set(GENETIC_SEQUENCE.VERSION, data.accessionVersion())
                     .set(GENETIC_SEQUENCE.DEFINITION, data.description())
-                    .set(GENETIC_SEQUENCE.FILE_TYPE, 2)
+                    .set(GENETIC_SEQUENCE.FILE_TYPE, SequenceFileType.FASTA.dbValue())
                     .set(GENETIC_SEQUENCE.FILE_URI, file.toURI().toString())
                     .returning().fetchOne();
             records.add(record);
@@ -122,6 +123,64 @@ public class FileLibrary {
         
         public File getFile() {
             return file;
+        }
+    }
+    
+    public class SequenceFileTypeConverter extends EnumConverter<Short, SequenceFileType> {
+
+        public SequenceFileTypeConverter() {
+            super(Short.class, SequenceFileType.class);
+        }
+        
+        @Override
+        public Short to(SequenceFileType userObject) {
+            // TODO Auto-generated method stub
+            return super.to(userObject);
+        }
+    }
+    
+    public enum SequenceUnit {
+        UNKNOWN((short) 0, ""),
+        BASE_PAIR((short) 1, "bp"),
+        AMINO_ACID((short) 2, "aa");
+        
+        private final short index;
+        private final String label;
+
+        private SequenceUnit(short index, String label) {
+            this.index = index;
+            this.label = label;
+        }
+
+        public short index() {
+            return index;
+        }
+        
+        public static SequenceUnit fromLabel(String label) {
+            if (BASE_PAIR.label.equals(label)) {
+                return BASE_PAIR;
+            }
+            else if (AMINO_ACID.label.equals(label)) {
+                return AMINO_ACID;
+            }
+            return UNKNOWN;
+        }
+    }
+    
+    public enum SequenceFileType {
+        UNKNOWN(0),
+        GENBANK(1),
+        FASTA(2),
+        ;
+        
+        private final int number;
+        
+        private SequenceFileType(int number) {
+            this.number = number;
+        }
+        
+        public short dbValue() {
+            return (short) number;
         }
     }
 }
