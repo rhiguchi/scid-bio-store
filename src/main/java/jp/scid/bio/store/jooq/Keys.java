@@ -15,12 +15,19 @@ package jp.scid.bio.store.jooq;
 public class Keys {
 
 	// IDENTITY definitions
+	public static final org.jooq.Identity<jp.scid.bio.store.jooq.tables.records.CollectionItemRecord, java.lang.Long> IDENTITY_COLLECTION_ITEM = Identities0.IDENTITY_COLLECTION_ITEM;
+	public static final org.jooq.Identity<jp.scid.bio.store.jooq.tables.records.FolderRecord, java.lang.Long> IDENTITY_FOLDER = Identities0.IDENTITY_FOLDER;
 	public static final org.jooq.Identity<jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord, java.lang.Long> IDENTITY_GENETIC_SEQUENCE = Identities0.IDENTITY_GENETIC_SEQUENCE;
 
 	// UNIQUE and PRIMARY KEY definitions
+	public static final org.jooq.UniqueKey<jp.scid.bio.store.jooq.tables.records.CollectionItemRecord> CONSTRAINT_8 = UniqueKeys0.CONSTRAINT_8;
+	public static final org.jooq.UniqueKey<jp.scid.bio.store.jooq.tables.records.FolderRecord> CONSTRAINT_7 = UniqueKeys0.CONSTRAINT_7;
 	public static final org.jooq.UniqueKey<jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord> CONSTRAINT_5 = UniqueKeys0.CONSTRAINT_5;
 
 	// FOREIGN KEY definitions
+	public static final org.jooq.ForeignKey<jp.scid.bio.store.jooq.tables.records.CollectionItemRecord, jp.scid.bio.store.jooq.tables.records.FolderRecord> FK_COLLECTION_ITEM_FOLDER_ID = ForeignKeys0.FK_COLLECTION_ITEM_FOLDER_ID;
+	public static final org.jooq.ForeignKey<jp.scid.bio.store.jooq.tables.records.CollectionItemRecord, jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord> FK_COLLECTION_ITEM_GENETIC_SEQUENCE_ID = ForeignKeys0.FK_COLLECTION_ITEM_GENETIC_SEQUENCE_ID;
+	public static final org.jooq.ForeignKey<jp.scid.bio.store.jooq.tables.records.FolderRecord, jp.scid.bio.store.jooq.tables.records.FolderRecord> FK_FOLDER_PARENT = ForeignKeys0.FK_FOLDER_PARENT;
 
 	/**
 	 * No instances
@@ -29,11 +36,22 @@ public class Keys {
 
 	@SuppressWarnings("hiding")
 	private static class Identities0 extends org.jooq.impl.AbstractKeys {
+		public static org.jooq.Identity<jp.scid.bio.store.jooq.tables.records.CollectionItemRecord, java.lang.Long> IDENTITY_COLLECTION_ITEM = createIdentity(jp.scid.bio.store.jooq.tables.CollectionItem.COLLECTION_ITEM, jp.scid.bio.store.jooq.tables.CollectionItem.COLLECTION_ITEM.ID);
+		public static org.jooq.Identity<jp.scid.bio.store.jooq.tables.records.FolderRecord, java.lang.Long> IDENTITY_FOLDER = createIdentity(jp.scid.bio.store.jooq.tables.Folder.FOLDER, jp.scid.bio.store.jooq.tables.Folder.FOLDER.ID);
 		public static org.jooq.Identity<jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord, java.lang.Long> IDENTITY_GENETIC_SEQUENCE = createIdentity(jp.scid.bio.store.jooq.tables.GeneticSequence.GENETIC_SEQUENCE, jp.scid.bio.store.jooq.tables.GeneticSequence.GENETIC_SEQUENCE.ID);
 	}
 
 	@SuppressWarnings({"hiding", "unchecked"})
 	private static class UniqueKeys0 extends org.jooq.impl.AbstractKeys {
+		public static final org.jooq.UniqueKey<jp.scid.bio.store.jooq.tables.records.CollectionItemRecord> CONSTRAINT_8 = createUniqueKey(jp.scid.bio.store.jooq.tables.CollectionItem.COLLECTION_ITEM, jp.scid.bio.store.jooq.tables.CollectionItem.COLLECTION_ITEM.ID);
+		public static final org.jooq.UniqueKey<jp.scid.bio.store.jooq.tables.records.FolderRecord> CONSTRAINT_7 = createUniqueKey(jp.scid.bio.store.jooq.tables.Folder.FOLDER, jp.scid.bio.store.jooq.tables.Folder.FOLDER.ID);
 		public static final org.jooq.UniqueKey<jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord> CONSTRAINT_5 = createUniqueKey(jp.scid.bio.store.jooq.tables.GeneticSequence.GENETIC_SEQUENCE, jp.scid.bio.store.jooq.tables.GeneticSequence.GENETIC_SEQUENCE.ID);
+	}
+
+	@SuppressWarnings({"hiding", "unchecked"})
+	private static class ForeignKeys0 extends org.jooq.impl.AbstractKeys {
+		public static final org.jooq.ForeignKey<jp.scid.bio.store.jooq.tables.records.CollectionItemRecord, jp.scid.bio.store.jooq.tables.records.FolderRecord> FK_COLLECTION_ITEM_FOLDER_ID = createForeignKey(jp.scid.bio.store.jooq.Keys.CONSTRAINT_7, jp.scid.bio.store.jooq.tables.CollectionItem.COLLECTION_ITEM, jp.scid.bio.store.jooq.tables.CollectionItem.COLLECTION_ITEM.FOLDER_ID, jp.scid.bio.store.jooq.tables.CollectionItem.COLLECTION_ITEM.FOLDER_ID);
+		public static final org.jooq.ForeignKey<jp.scid.bio.store.jooq.tables.records.CollectionItemRecord, jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord> FK_COLLECTION_ITEM_GENETIC_SEQUENCE_ID = createForeignKey(jp.scid.bio.store.jooq.Keys.CONSTRAINT_5, jp.scid.bio.store.jooq.tables.CollectionItem.COLLECTION_ITEM, jp.scid.bio.store.jooq.tables.CollectionItem.COLLECTION_ITEM.GENETIC_SEQUENCE_ID);
+		public static final org.jooq.ForeignKey<jp.scid.bio.store.jooq.tables.records.FolderRecord, jp.scid.bio.store.jooq.tables.records.FolderRecord> FK_FOLDER_PARENT = createForeignKey(jp.scid.bio.store.jooq.Keys.CONSTRAINT_7, jp.scid.bio.store.jooq.tables.Folder.FOLDER, jp.scid.bio.store.jooq.tables.Folder.FOLDER.PARENT_ID, jp.scid.bio.store.jooq.tables.Folder.FOLDER.PARENT_ID);
 	}
 }

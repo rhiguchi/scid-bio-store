@@ -11,7 +11,7 @@ package jp.scid.bio.store.jooq;
 @java.lang.SuppressWarnings("all")
 public class Public extends org.jooq.impl.SchemaImpl {
 
-	private static final long serialVersionUID = -2124981741;
+	private static final long serialVersionUID = -211588346;
 
 	/**
 	 * The singleton instance of PUBLIC
@@ -27,11 +27,17 @@ public class Public extends org.jooq.impl.SchemaImpl {
 
 	@Override
 	public final java.util.List<org.jooq.Sequence<?>> getSequences() {
-		return java.util.Arrays.<org.jooq.Sequence<?>>asList(jp.scid.bio.store.jooq.Sequences.SYSTEM_SEQUENCE_13FD907B_C6AB_4E31_9636_9E9A111139B0);
+		return java.util.Arrays.<org.jooq.Sequence<?>>asList(
+			jp.scid.bio.store.jooq.Sequences.SYSTEM_SEQUENCE_1E5901A4_03C0_4DD1_9178_24C38C91C8CB,
+			jp.scid.bio.store.jooq.Sequences.SYSTEM_SEQUENCE_DF316686_0F8C_4436_8429_F5605D545300,
+			jp.scid.bio.store.jooq.Sequences.SYSTEM_SEQUENCE_E4025641_F835_49F6_82B4_CECEC9FF9823);
 	}
 
 	@Override
 	public final java.util.List<org.jooq.Table<?>> getTables() {
-		return java.util.Arrays.<org.jooq.Table<?>>asList(jp.scid.bio.store.jooq.tables.GeneticSequence.GENETIC_SEQUENCE);
+		return java.util.Arrays.<org.jooq.Table<?>>asList(
+			jp.scid.bio.store.jooq.tables.CollectionItem.COLLECTION_ITEM,
+			jp.scid.bio.store.jooq.tables.Folder.FOLDER,
+			jp.scid.bio.store.jooq.tables.GeneticSequence.GENETIC_SEQUENCE);
 	}
 }

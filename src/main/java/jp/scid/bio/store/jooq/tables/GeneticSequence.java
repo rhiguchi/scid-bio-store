@@ -13,7 +13,7 @@ package jp.scid.bio.store.jooq.tables;
 @java.lang.SuppressWarnings("all")
 public class GeneticSequence extends org.jooq.impl.UpdatableTableImpl<jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord> {
 
-	private static final long serialVersionUID = 857155054;
+	private static final long serialVersionUID = 1878241279;
 
 	/**
 	 * The singleton instance of PUBLIC.GENETIC_SEQUENCE
@@ -29,14 +29,14 @@ public class GeneticSequence extends org.jooq.impl.UpdatableTableImpl<jp.scid.bi
 	}
 
 	/**
-	 * 展示物識別番号
+	 * 識別子
 	 * <p>
 	 * This column is part of the table's PRIMARY KEY
 	 */
 	public final org.jooq.TableField<jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord, java.lang.Long> ID = createField("ID", org.jooq.impl.SQLDataType.BIGINT, this);
 
 	/**
-	 * 名前 : 名前
+	 * 名前
 	 */
 	public final org.jooq.TableField<jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord, java.lang.String> NAME = createField("NAME", org.jooq.impl.SQLDataType.VARCHAR, this);
 
@@ -68,7 +68,7 @@ public class GeneticSequence extends org.jooq.impl.UpdatableTableImpl<jp.scid.bi
 	/**
 	 * ソース
 	 */
-	public final org.jooq.TableField<jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord, java.lang.String> SOURCE_TEXT = createField("SOURCE_TEXT", org.jooq.impl.SQLDataType.VARCHAR, this);
+	public final org.jooq.TableField<jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord, java.lang.String> SOURCE = createField("SOURCE", org.jooq.impl.SQLDataType.VARCHAR, this);
 
 	/**
 	 * 生物種
@@ -81,9 +81,9 @@ public class GeneticSequence extends org.jooq.impl.UpdatableTableImpl<jp.scid.bi
 	public final org.jooq.TableField<jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord, java.sql.Date> DATE = createField("DATE", org.jooq.impl.SQLDataType.DATE, this);
 
 	/**
-	 * 配列単位
+	 * 配列単位 : 0: 不明, 1: bp, 2: aa
 	 */
-	public final org.jooq.TableField<jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord, java.lang.String> UNIT = createField("UNIT", org.jooq.impl.SQLDataType.VARCHAR, this);
+	public final org.jooq.TableField<jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord, java.lang.Short> UNIT = createField("UNIT", org.jooq.impl.SQLDataType.SMALLINT, this);
 
 	/**
 	 * 分子型
@@ -91,12 +91,12 @@ public class GeneticSequence extends org.jooq.impl.UpdatableTableImpl<jp.scid.bi
 	public final org.jooq.TableField<jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord, java.lang.String> MOLECULE_TYPE = createField("MOLECULE_TYPE", org.jooq.impl.SQLDataType.VARCHAR, this);
 
 	/**
-	 * ファイル形式
+	 * ファイル形式 : 0: 不明, 1: GenBank, 2: FASTA
 	 */
-	public final org.jooq.TableField<jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord, java.lang.Integer> FILE_TYPE = createField("FILE_TYPE", org.jooq.impl.SQLDataType.INTEGER, this);
+	public final org.jooq.TableField<jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord, java.lang.Short> FILE_TYPE = createField("FILE_TYPE", org.jooq.impl.SQLDataType.SMALLINT, this);
 
 	/**
-	 * ファイル保管場所URI
+	 * ファイル保管場所URI : 相対パスの時は、ライブラリをルートとする
 	 */
 	public final org.jooq.TableField<jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord, java.lang.String> FILE_URI = createField("FILE_URI", org.jooq.impl.SQLDataType.VARCHAR, this);
 

@@ -13,10 +13,10 @@ package jp.scid.bio.store.jooq.tables.records;
 @java.lang.SuppressWarnings("all")
 public class GeneticSequenceRecord extends org.jooq.impl.UpdatableRecordImpl<jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord> {
 
-	private static final long serialVersionUID = 798679943;
+	private static final long serialVersionUID = -66063059;
 
 	/**
-	 * 展示物識別番号
+	 * 識別子
 	 * <p>
 	 * This column is part of the table's PRIMARY KEY
 	 */
@@ -25,7 +25,7 @@ public class GeneticSequenceRecord extends org.jooq.impl.UpdatableRecordImpl<jp.
 	}
 
 	/**
-	 * 展示物識別番号
+	 * 識別子
 	 * <p>
 	 * This column is part of the table's PRIMARY KEY
 	 */
@@ -34,14 +34,26 @@ public class GeneticSequenceRecord extends org.jooq.impl.UpdatableRecordImpl<jp.
 	}
 
 	/**
-	 * 名前 : 名前
+	 * 識別子
+	 * <p>
+	 * This column is part of the table's PRIMARY KEY
+	 */
+	public java.util.List<jp.scid.bio.store.jooq.tables.records.CollectionItemRecord> fetchCollectionItemList() {
+		return create()
+			.selectFrom(jp.scid.bio.store.jooq.tables.CollectionItem.COLLECTION_ITEM)
+			.where(jp.scid.bio.store.jooq.tables.CollectionItem.COLLECTION_ITEM.GENETIC_SEQUENCE_ID.equal(getValue(jp.scid.bio.store.jooq.tables.GeneticSequence.GENETIC_SEQUENCE.ID)))
+			.fetch();
+	}
+
+	/**
+	 * 名前
 	 */
 	public void setName(java.lang.String value) {
 		setValue(jp.scid.bio.store.jooq.tables.GeneticSequence.GENETIC_SEQUENCE.NAME, value);
 	}
 
 	/**
-	 * 名前 : 名前
+	 * 名前
 	 */
 	public java.lang.String getName() {
 		return getValue(jp.scid.bio.store.jooq.tables.GeneticSequence.GENETIC_SEQUENCE.NAME);
@@ -120,15 +132,15 @@ public class GeneticSequenceRecord extends org.jooq.impl.UpdatableRecordImpl<jp.
 	/**
 	 * ソース
 	 */
-	public void setSourceText(java.lang.String value) {
-		setValue(jp.scid.bio.store.jooq.tables.GeneticSequence.GENETIC_SEQUENCE.SOURCE_TEXT, value);
+	public void setSource(java.lang.String value) {
+		setValue(jp.scid.bio.store.jooq.tables.GeneticSequence.GENETIC_SEQUENCE.SOURCE, value);
 	}
 
 	/**
 	 * ソース
 	 */
-	public java.lang.String getSourceText() {
-		return getValue(jp.scid.bio.store.jooq.tables.GeneticSequence.GENETIC_SEQUENCE.SOURCE_TEXT);
+	public java.lang.String getSource() {
+		return getValue(jp.scid.bio.store.jooq.tables.GeneticSequence.GENETIC_SEQUENCE.SOURCE);
 	}
 
 	/**
@@ -160,16 +172,16 @@ public class GeneticSequenceRecord extends org.jooq.impl.UpdatableRecordImpl<jp.
 	}
 
 	/**
-	 * 配列単位
+	 * 配列単位 : 0: 不明, 1: bp, 2: aa
 	 */
-	public void setUnit(java.lang.String value) {
+	public void setUnit(java.lang.Short value) {
 		setValue(jp.scid.bio.store.jooq.tables.GeneticSequence.GENETIC_SEQUENCE.UNIT, value);
 	}
 
 	/**
-	 * 配列単位
+	 * 配列単位 : 0: 不明, 1: bp, 2: aa
 	 */
-	public java.lang.String getUnit() {
+	public java.lang.Short getUnit() {
 		return getValue(jp.scid.bio.store.jooq.tables.GeneticSequence.GENETIC_SEQUENCE.UNIT);
 	}
 
@@ -188,28 +200,28 @@ public class GeneticSequenceRecord extends org.jooq.impl.UpdatableRecordImpl<jp.
 	}
 
 	/**
-	 * ファイル形式
+	 * ファイル形式 : 0: 不明, 1: GenBank, 2: FASTA
 	 */
-	public void setFileType(java.lang.Integer value) {
+	public void setFileType(java.lang.Short value) {
 		setValue(jp.scid.bio.store.jooq.tables.GeneticSequence.GENETIC_SEQUENCE.FILE_TYPE, value);
 	}
 
 	/**
-	 * ファイル形式
+	 * ファイル形式 : 0: 不明, 1: GenBank, 2: FASTA
 	 */
-	public java.lang.Integer getFileType() {
+	public java.lang.Short getFileType() {
 		return getValue(jp.scid.bio.store.jooq.tables.GeneticSequence.GENETIC_SEQUENCE.FILE_TYPE);
 	}
 
 	/**
-	 * ファイル保管場所URI
+	 * ファイル保管場所URI : 相対パスの時は、ライブラリをルートとする
 	 */
 	public void setFileUri(java.lang.String value) {
 		setValue(jp.scid.bio.store.jooq.tables.GeneticSequence.GENETIC_SEQUENCE.FILE_URI, value);
 	}
 
 	/**
-	 * ファイル保管場所URI
+	 * ファイル保管場所URI : 相対パスの時は、ライブラリをルートとする
 	 */
 	public java.lang.String getFileUri() {
 		return getValue(jp.scid.bio.store.jooq.tables.GeneticSequence.GENETIC_SEQUENCE.FILE_URI);

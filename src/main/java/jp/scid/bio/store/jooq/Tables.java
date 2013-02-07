@@ -14,6 +14,16 @@ package jp.scid.bio.store.jooq;
 public final class Tables {
 
 	/**
+	 * 配列コレクション
+	 */
+	public static final jp.scid.bio.store.jooq.tables.CollectionItem COLLECTION_ITEM = jp.scid.bio.store.jooq.tables.CollectionItem.COLLECTION_ITEM;
+
+	/**
+	 * フォルダ : フォルダとその階層構造
+	 */
+	public static final jp.scid.bio.store.jooq.tables.Folder FOLDER = jp.scid.bio.store.jooq.tables.Folder.FOLDER;
+
+	/**
 	 * 配列 : バイオデータファイルを表すテーブル
 	 */
 	public static final jp.scid.bio.store.jooq.tables.GeneticSequence GENETIC_SEQUENCE = jp.scid.bio.store.jooq.tables.GeneticSequence.GENETIC_SEQUENCE;
