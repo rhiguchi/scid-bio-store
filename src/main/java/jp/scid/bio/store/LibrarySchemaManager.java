@@ -86,6 +86,12 @@ public class LibrarySchemaManager implements Closeable {
 
         factory.execute(sql);
     }
+    
+    public SequenceLibrary createSequenceLibrary() {
+        Factory factory = new H2Factory(getConnection());
+        SequenceLibrary library = new SequenceLibrary(factory);
+        return library;
+    }
 
     protected String getSchemaSql() throws IOException {
         InputStream resource = LibrarySchemaManager.class.getResourceAsStream("sql/schema.sql");

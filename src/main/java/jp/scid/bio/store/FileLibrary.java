@@ -1,5 +1,6 @@
 package jp.scid.bio.store;
 
+import static java.lang.String.*;
 import static jp.scid.bio.store.jooq.Tables.*;
 
 import java.io.BufferedReader;
@@ -20,6 +21,7 @@ import jp.scid.bio.sequence.genbank.GenBankFormat;
 import jp.scid.bio.store.jooq.Tables;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
 
+import org.apache.commons.io.FileUtils;
 import org.jooq.impl.EnumConverter;
 import org.jooq.impl.Factory;
 
@@ -29,11 +31,106 @@ public class FileLibrary {
     
     private GenBankFormat genBankFormat = new GenBankFormat();
     private FastaFormat fastaFormat = new FastaFormat();
+
+    private File libraryRoot;
     
-    public FileLibrary(Factory factory) {
+    private String genbankExtension = ".gbk";
+    private String fastaExtension = ".fasta";
+    private String otherFileExtension = ".txt";
+    
+    FileLibrary(Factory factory) {
         this.create = factory;
         
         dataFiles = SequenceBioDataFiles.newDefaultFormats();
+        
+        libraryRoot = new File(".");
+    }
+    
+    public static FileLibrary newFileLibrary(File filesRoot) {
+        FileLibrary lib = new FileLibrary(null);
+        lib.libraryRoot = filesRoot;
+        return lib;
+    }
+    
+    public File storeFile(File sourceFile, GeneticSequenceRecord record) throws IOException {
+        SequenceFileType fileType = SequenceFileType.fromDbValue(record.getFileType());
+        String extension = getExtension(fileType);
+        String baseName =
+            getBaseName(record.getName(), record.getAccession(), record.getDefinition());
+
+        File outFile = new File(libraryRoot, baseName + extension);
+        int baseCount = 1;
+        
+        File outFileDir = outFile.getParentFile();
+        if (!outFileDir.exists()) {
+            outFile.getParentFile().mkdirs();
+        }
+        
+        if (!outFileDir.canWrite())
+            throw new IOException(format("writing to dir %s is not allowed", outFile));
+        
+        while (!outFile.createNewFile()) {
+            outFile = new File(libraryRoot, baseName + " " + baseCount++ + extension);
+        }
+        
+        FileUtils.copyFile(sourceFile, outFile, true);
+        
+        return outFile;
+    }
+    
+    public File convertLibraryAbsolutePath(File path) {
+        String pathString = libraryRoot.getAbsolutePath() + "/" + path.getPath();
+        return new File(pathString);
+    }
+    
+    public File convertLibraryRelativePath(File path) {
+        String absolutePath = path.getAbsolutePath();
+        String absoluteRootPath = libraryRoot.getAbsolutePath();
+        
+        if (!absolutePath.startsWith(absoluteRootPath)) {
+            throw new IllegalArgumentException(
+                    format("file %s does not start with %s", absolutePath, absoluteRootPath));
+        }
+        
+        String relativePath = absolutePath.substring(absoluteRootPath.length());
+        
+        if (relativePath.startsWith("/")) {
+            relativePath = relativePath.substring(1);
+        }
+        return new File(relativePath);
+    }
+
+    String getBaseName(String name, String accession, String definition) {
+        final String baseName;
+        
+        if (name != null && !name.isEmpty()) {
+            baseName = name;
+        }
+        else if (accession != null && !accession.isEmpty()) {
+            baseName = accession;
+        }
+        else if (definition != null && !definition.isEmpty()) {
+            baseName = definition;
+        }
+        else {
+            baseName = "Untitled";
+        }
+        return baseName;
+    }
+
+    String getExtension(SequenceFileType fileType) {
+        final String extension;
+        
+        if (fileType == SequenceFileType.GENBANK) {
+            extension = genbankExtension;
+        }
+        else if (fileType == SequenceFileType.FASTA) {
+            extension = fastaExtension;
+        }
+        else {
+            extension = otherFileExtension;
+        }
+        return extension;
     }
     
     public GeneticSequenceRecord add(File file) throws UnknownSequenceFormatException, IOException, ParseException {
@@ -181,6 +278,10 @@ public class FileLibrary {
         
         public short dbValue() {
             return (short) number;
+        }
+        
+        public static SequenceFileType fromDbValue(short number) {
+            return values()[number];
         }
     }
 }

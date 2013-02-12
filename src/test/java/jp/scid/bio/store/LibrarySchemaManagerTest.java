@@ -55,4 +55,13 @@ public class LibrarySchemaManagerTest {
         
         assertTrue(manager.isSchemaReady());
     }
+    
+    @Test
+    public void create() throws SQLException {
+        manager.open();
+        
+        SequenceLibrary library = manager.createSequenceLibrary();
+        
+        assertNotNull("creation", library);
+    }
 }
