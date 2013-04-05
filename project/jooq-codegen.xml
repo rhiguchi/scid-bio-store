@@ -3,8 +3,8 @@
   <!-- Configure the database connection here -->
   <jdbc>
     <driver>org.h2.Driver</driver>
-    <url>jdbc:h2:tcp://localhost/~/GenomeMuseum/lib</url>
-    <user>genomemuseum</user>
+    <url>jdbc:h2:file:build/tmp/codegen</url>
+    <user>genomemuseum</user> 
     <password></password>
   </jdbc>
 
@@ -41,6 +41,7 @@
     
     <generate>
       <deprecated>false</deprecated>
+      <daos>false</daos>
     </generate>
   </generator>
 </configuration>

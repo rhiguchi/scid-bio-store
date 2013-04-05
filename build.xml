@@ -53,6 +53,21 @@
         </java>
     </target>
 
+    <target name="create-schema" depends="" description="description">
+        <ivy:resolve conf="h2" />
+        <ivy:cachepath pathid="lib.h2.classpath" conf="h2" />
+        
+        <property name="codegen.database.file" value="jdbc:h2:file:${build.dir}/tmp/codegen" />
+        
+        <delete dir="build/tmp" includes="codegen.*" />
+        
+        <sql userid="genomemuseum" password="" url="${codegen.database.file}" driver="org.h2.Driver">
+            <classpath refid="lib.h2.classpath"/>
+            <transaction src="src/main/resources/jp/scid/bio/store/sql/schema.sql" />
+        </sql>
+    </target>
+
+    
     <!-- ================================= 
           target: jooq-codegen              
          ================================= -->
@@ -60,6 +75,7 @@
         <ivy:retrieve conf="jooq-codegen" symlink="true" />
         <ivy:cachepath pathid="lib.jooq-codegen.classpath" conf="jooq-codegen" />
 
+        <antcall target="create-schema"></antcall>
 
         <java fork="true" classname="org.jooq.util.GenerationTool" failonerror="yes">
             <jvmarg value="-Dfile.encoding=UTF-8"/>
