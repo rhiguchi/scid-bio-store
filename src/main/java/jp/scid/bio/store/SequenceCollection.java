@@ -224,14 +224,22 @@ abstract class AbstractSequenceCollection extends AbstractListModel implements S
     }
 }
 
-class BasicSequenceCollection extends AbstractSequenceCollection {
+abstract class AbstractFolderSequenceCollection extends AbstractSequenceCollection {
+    final long folderId;
+    
+    public AbstractFolderSequenceCollection(Factory factory, long folderId) {
+        super(factory);
+        
+        this.folderId = folderId;
+    }
+}
+
+class BasicSequenceCollection extends AbstractFolderSequenceCollection {
     final static Field<Long> LAST_MODIFICATION = fieldByName(Long.class, "last_modification");
     final static Field<String> TABLE_NAME = fieldByName(String.class, "table_name");
     
-    private Long folderId = null;
-    
-    public BasicSequenceCollection(Factory factory) {
-        super(factory);
+    public BasicSequenceCollection(Factory factory, long folderId) {
+        super(factory, folderId);
     }
 //
 //    public void fetch() {
@@ -277,19 +285,12 @@ class BasicSequenceCollection extends AbstractSequenceCollection {
         
         record.store();
         
-        Long lookupId;
-        
-        if (folderId != null) {
-            CollectionItemRecord item = create.newRecord(Tables.COLLECTION_ITEM);
-            item.setFolderId(folderId);
-            item.setGeneticSequenceId(record);
-            item.store();
-            
-            lookupId = item.getId();
-        }
-        else {
-            lookupId = record.getId();
-        }
+        CollectionItemRecord item = create.newRecord(Tables.COLLECTION_ITEM);
+        item.setFolderId(folderId);
+        item.setGeneticSequenceId(record);
+        item.store();
+
+        Long lookupId = item.getId();
         
         addOrUpdate(lookupId, record);
     }
@@ -301,6 +302,34 @@ class BasicSequenceCollection extends AbstractSequenceCollection {
                 .fetchOne(LAST_MODIFICATION);
         return value;
     }
+}
+
+class NodeSequenceCollection extends AbstractFolderSequenceCollection {
+
+    public NodeSequenceCollection(Factory factory, long folderId) {
+        super(factory, folderId);
+    }
+
+    @Override
+    protected List<IdentifiableRecord> retrieve() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+}
+
+class FilterSequenceCollection extends AbstractFolderSequenceCollection {
+    
+    public FilterSequenceCollection(Factory factory, long folderId) {
+        super(factory, folderId);
+    }
+    
+    @Override
+    protected List<IdentifiableRecord> retrieve() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
 }
 
 class LastModificationCheck {
