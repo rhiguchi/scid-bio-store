@@ -10,6 +10,7 @@ import jp.scid.bio.store.jooq.tables.records.FolderRecord;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
 
 import org.jooq.Condition;
+import org.jooq.Converter;
 import org.jooq.Result;
 import org.jooq.impl.EnumConverter;
 import org.jooq.impl.Factory;
@@ -19,6 +20,14 @@ public class SequenceLibrary {
     
     SequenceLibrary(Factory factory) {
         this.create = factory;
+    }
+    
+    public SequenceCollection getFolderContent(long folderId) {
+        FolderRecord folder = findFolder(folderId);
+        FolderType type = FolderType.fromRecordValue(folder.getType());
+        AbstractFolderSequenceCollection sequenceCollection = type.createSequenceCollection(create, folderId);
+        
+        return sequenceCollection;
     }
     
     public GeneticSequenceRecord createRecord() {
@@ -63,21 +72,46 @@ public class SequenceLibrary {
     }
     
     public enum FolderType {
-        NODE, COLLECTION, FILTER;  
-    }
-    
-    public static class FolderTypeConverter extends EnumConverter<Short, FolderType> {
-        private final static FolderTypeConverter singleton =
-                new FolderTypeConverter();
-        private FolderTypeConverter() {
-            super(Short.class, FolderType.class);
+        NODE() {
+            @Override
+            public AbstractFolderSequenceCollection createSequenceCollection(Factory factory, long folderId) {
+                return new NodeSequenceCollection(factory, folderId);
+            }
+        },
+        COLLECTION() {
+            @Override
+            public AbstractFolderSequenceCollection createSequenceCollection(Factory factory, long folderId) {
+                return new BasicSequenceCollection(factory, folderId);
+            }
+        },
+        FILTER() {
+            @Override
+            public AbstractFolderSequenceCollection createSequenceCollection(Factory factory, long folderId) {
+                return new FilterSequenceCollection(factory, folderId);
+            }
+        };
+        
+        private static final EnumConverter<Short, FolderType> converter =
+                new EnumConverter<Short, FolderType>(Short.class, FolderType.class);
+        
+        private FolderType() {
         }
         
-        public static FolderTypeConverter getInstance() {
-            return singleton;
+        public static FolderType fromRecordValue(int value) {
+            return converter.from((short) value);
         }
+        
+        public static Converter<Short, FolderType> getConverter() {
+            return converter;
+        }
+        
+        public short getDbValue() {
+            return (short) this.ordinal();
+        }
+        
+        abstract public AbstractFolderSequenceCollection createSequenceCollection(Factory factory, long folderId);
     }
-
+    
     public int delete(List<GeneticSequenceRecord> list) {
         int count = 0;
         for (GeneticSequenceRecord record: list) {
@@ -93,7 +127,7 @@ public class SequenceLibrary {
     }
     
     private boolean isNodeFolder(long folderId) {
-        Short nodeValue = FolderTypeConverter.getInstance().to(FolderType.NODE);
+        Short nodeValue = FolderType.NODE.getDbValue();
         
         return create.selectCount().from(FOLDER)
                 .where(FOLDER.ID.eq(folderId))
@@ -117,7 +151,7 @@ public class SequenceLibrary {
     public FolderRecord createFolder(FolderType type) {
         FolderRecord record = create.newRecord(Tables.FOLDER);
         record.setId(null);
-        record.setValue(FOLDER.TYPE, type, FolderTypeConverter.getInstance());
+        record.setValue(FOLDER.TYPE, type, FolderType.getConverter());
         record.setName(getNewFolderName(type));
         return record;
     }
