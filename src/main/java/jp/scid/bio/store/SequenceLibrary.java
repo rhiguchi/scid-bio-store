@@ -4,15 +4,15 @@ import static jp.scid.bio.store.jooq.Tables.*;
 
 import java.util.List;
 
+import jp.scid.bio.store.collection.CollectionType;
+import jp.scid.bio.store.collection.SequenceCollection;
 import jp.scid.bio.store.jooq.Tables;
 import jp.scid.bio.store.jooq.tables.records.CollectionItemRecord;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
 
 import org.jooq.Condition;
-import org.jooq.Converter;
 import org.jooq.Result;
-import org.jooq.impl.EnumConverter;
 import org.jooq.impl.Factory;
 
 public class SequenceLibrary {
@@ -24,8 +24,8 @@ public class SequenceLibrary {
     
     public SequenceCollection getFolderContent(long folderId) {
         FolderRecord folder = findFolder(folderId);
-        FolderType type = FolderType.fromRecordValue(folder.getType());
-        AbstractFolderSequenceCollection sequenceCollection = type.createSequenceCollection(create, folderId);
+        CollectionType type = CollectionType.fromRecordValue(folder.getType());
+        SequenceCollection sequenceCollection = type.createSequenceCollection(create, folderId);
         
         return sequenceCollection;
     }
@@ -71,47 +71,6 @@ public class SequenceLibrary {
         return result;
     }
     
-    public enum FolderType {
-        NODE() {
-            @Override
-            public AbstractFolderSequenceCollection createSequenceCollection(Factory factory, long folderId) {
-                return new NodeSequenceCollection(factory, folderId);
-            }
-        },
-        COLLECTION() {
-            @Override
-            public AbstractFolderSequenceCollection createSequenceCollection(Factory factory, long folderId) {
-                return new BasicSequenceCollection(factory, folderId);
-            }
-        },
-        FILTER() {
-            @Override
-            public AbstractFolderSequenceCollection createSequenceCollection(Factory factory, long folderId) {
-                return new FilterSequenceCollection(factory, folderId);
-            }
-        };
-        
-        private static final EnumConverter<Short, FolderType> converter =
-                new EnumConverter<Short, FolderType>(Short.class, FolderType.class);
-        
-        private FolderType() {
-        }
-        
-        public static FolderType fromRecordValue(int value) {
-            return converter.from((short) value);
-        }
-        
-        public static Converter<Short, FolderType> getConverter() {
-            return converter;
-        }
-        
-        public short getDbValue() {
-            return (short) this.ordinal();
-        }
-        
-        abstract public AbstractFolderSequenceCollection createSequenceCollection(Factory factory, long folderId);
-    }
-    
     public int delete(List<GeneticSequenceRecord> list) {
         int count = 0;
         for (GeneticSequenceRecord record: list) {
@@ -127,7 +86,7 @@ public class SequenceLibrary {
     }
     
     private boolean isNodeFolder(long folderId) {
-        Short nodeValue = FolderType.NODE.getDbValue();
+        Short nodeValue = CollectionType.NODE.getDbValue();
         
         return create.selectCount().from(FOLDER)
                 .where(FOLDER.ID.eq(folderId))
@@ -148,10 +107,10 @@ public class SequenceLibrary {
                 .execute() > 0;
     }
     
-    public FolderRecord createFolder(FolderType type) {
+    public FolderRecord createFolder(CollectionType type) {
         FolderRecord record = create.newRecord(Tables.FOLDER);
         record.setId(null);
-        record.setValue(FOLDER.TYPE, type, FolderType.getConverter());
+        record.setValue(FOLDER.TYPE, type, CollectionType.getConverter());
         record.setName(getNewFolderName(type));
         return record;
     }
@@ -160,7 +119,7 @@ public class SequenceLibrary {
         folder.store();
     }
     
-    protected String getNewFolderName(FolderType type) {
+    protected String getNewFolderName(CollectionType type) {
         return "New " + type.name(); // TODO
     }
     

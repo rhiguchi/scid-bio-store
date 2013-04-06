@@ -1,55 +1,30 @@
-package jp.scid.bio.store;
+package jp.scid.bio.store.collection;
 
-import static org.jooq.impl.Factory.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.NavigableMap;
 import java.util.NavigableSet;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 
 import javax.swing.AbstractListModel;
-import javax.swing.ListModel;
 
-import jp.scid.bio.store.AbstractSequenceCollection.IdentifiableRecord;
 import jp.scid.bio.store.jooq.Tables;
-import jp.scid.bio.store.jooq.tables.records.CollectionItemRecord;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
 
-import org.h2.tools.TriggerAdapter;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.RecordMapper;
 import org.jooq.Result;
-import org.jooq.Table;
-import org.jooq.UpdatableRecord;
 import org.jooq.impl.Factory;
-import org.jooq.impl.TableImpl;
-import org.jooq.impl.TableRecordImpl;
-import org.jooq.util.GenerationTool;
-
-public interface SequenceCollection extends ListModel, Iterable<GeneticSequenceRecord> {
-    public void fetch();
-    
-    public GeneticSequenceRecord getElementAt(int index);
-}
 
 abstract class AbstractSequenceCollection extends AbstractListModel implements SequenceCollection {
-    protected final Factory create;
+    final Factory create;
     
     private final LastModificationCheck modificationCheck;
     
@@ -224,136 +199,26 @@ abstract class AbstractSequenceCollection extends AbstractListModel implements S
     }
 }
 
-abstract class AbstractFolderSequenceCollection extends AbstractSequenceCollection {
-    final long folderId;
+class LibraryDelegate extends AbstractSequenceCollection {
+    private final static RecordMapper<GeneticSequenceRecord, IdentifiableRecord> MAPPER =
+            new RecordMapper<GeneticSequenceRecord, IdentifiableRecord>() {
+        @Override
+        public IdentifiableRecord map(GeneticSequenceRecord record) {
+            return new IdentifiableRecord(record.getId(), record);
+        }
+    };
     
-    public AbstractFolderSequenceCollection(Factory factory, long folderId) {
+    public LibraryDelegate(Factory factory) {
         super(factory);
-        
-        this.folderId = folderId;
     }
-}
 
-class BasicSequenceCollection extends AbstractFolderSequenceCollection {
-    final static Field<Long> LAST_MODIFICATION = fieldByName(Long.class, "last_modification");
-    final static Field<String> TABLE_NAME = fieldByName(String.class, "table_name");
-    
-    public BasicSequenceCollection(Factory factory, long folderId) {
-        super(factory, folderId);
-    }
-//
-//    public void fetch() {
-//        
-//        
-//        List<GeneticSequenceRecord> newElements = create.selectFrom(Tables.GENETIC_SEQUENCE)
-//                .orderBy(Tables.GENETIC_SEQUENCE.ID.asc())
-//                .fetch();
-//        
-//        elements.clear();
-//        elements.addAll(newElements);
-//    }
-    
     @Override
     protected List<IdentifiableRecord> retrieve() {
-        Field<Long> collectionItemIdField = Tables.COLLECTION_ITEM.ID.as("collection_item_id");
-        LinkedList<Field<?>> fields = new LinkedList<Field<?>>(Tables.GENETIC_SEQUENCE.getFields());
-        fields.addFirst(collectionItemIdField);
-        
-        Result<Record> result = create.select(fields)
-                .from(Tables.COLLECTION_ITEM)
-                .join(Tables.GENETIC_SEQUENCE)
-                .on(Tables.COLLECTION_ITEM.GENETIC_SEQUENCE_ID.eq(Tables.GENETIC_SEQUENCE.ID))
-                .orderBy(Tables.COLLECTION_ITEM.ID)
+        Result<GeneticSequenceRecord> result = create.selectFrom(Tables.GENETIC_SEQUENCE)
+                .orderBy(Tables.GENETIC_SEQUENCE.ID.asc())
                 .fetch();
         
-        List<IdentifiableRecord> list = result.map(new IdentifiableRecordMapper(collectionItemIdField));
+        List<IdentifiableRecord> list = result.map(MAPPER);
         return list;
     }
-    
-    public GeneticSequenceRecord addFile(File file) throws IOException {
-        GeneticSequenceRecord newRecord = create.newRecord(Tables.GENETIC_SEQUENCE);
-        newRecord.setId(null);
-        newRecord.setName("Untitiled");
-        
-        addRecord(newRecord);
-        
-        return newRecord;
-    }
-    
-    public void addRecord(GeneticSequenceRecord record) {
-        if (record == null) throw new IllegalArgumentException("record must not be null");
-        
-        record.store();
-        
-        CollectionItemRecord item = create.newRecord(Tables.COLLECTION_ITEM);
-        item.setFolderId(folderId);
-        item.setGeneticSequenceId(record);
-        item.store();
-
-        Long lookupId = item.getId();
-        
-        addOrUpdate(lookupId, record);
-    }
-    
-    private long retrieveTableLastModification() {
-        long value = create.select(LAST_MODIFICATION)
-                .from(tableByName("INFORMATION_SCHEMA", "TABLES"))
-                .where(TABLE_NAME.eq("GENETIC_SEQUENCE"))
-                .fetchOne(LAST_MODIFICATION);
-        return value;
-    }
 }
-
-class NodeSequenceCollection extends AbstractFolderSequenceCollection {
-
-    public NodeSequenceCollection(Factory factory, long folderId) {
-        super(factory, folderId);
-    }
-
-    @Override
-    protected List<IdentifiableRecord> retrieve() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-    
-}
-
-class FilterSequenceCollection extends AbstractFolderSequenceCollection {
-    
-    public FilterSequenceCollection(Factory factory, long folderId) {
-        super(factory, folderId);
-    }
-    
-    @Override
-    protected List<IdentifiableRecord> retrieve() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-    
-}
-
-class LastModificationCheck {
-    private final static Table<?> INFORMATION_SCHEMA_TABLES = tableByName("INFORMATION_SCHEMA", "TABLES");
-    private final static Field<Long> LAST_MODIFICATION = fieldByName(Long.class, "LAST_MODIFICATION");
-    private final static Field<String> TABLE_NAME = fieldByName(String.class, "TABLE_NAME");
-    
-    private final Factory factory;
-    private final String tableName;
-    
-    private long lastValue = 0;
-    
-    public LastModificationCheck(Factory factory, String tableName) {
-        this.factory = factory;
-        this.tableName = tableName;
-    }
-
-    public boolean checkUpdated() {
-        long value = factory.select(LAST_MODIFICATION)
-                .from(INFORMATION_SCHEMA_TABLES)
-                .where(TABLE_NAME.eq(tableName))
-                .fetchOne(LAST_MODIFICATION);
-        
-        return lastValue < (lastValue = value);
-    }
-}
-
