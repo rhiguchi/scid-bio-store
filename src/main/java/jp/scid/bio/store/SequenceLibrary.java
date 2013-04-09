@@ -12,14 +12,30 @@ import jp.scid.bio.store.jooq.tables.records.FolderRecord;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
 
 import org.jooq.Condition;
+import org.jooq.RecordMapper;
 import org.jooq.Result;
 import org.jooq.impl.Factory;
 
 public class SequenceLibrary {
     private final Factory create;
     
+    private final DefaultSequenceCollectionList foldersRoot;
+    
+    private final RecordMapper<FolderRecord, SequenceCollection> folderCollectionMapper =
+            new RecordMapper<FolderRecord, SequenceCollection>() {
+        
+        @Override
+        public SequenceCollection map(FolderRecord folder) {
+            CollectionType type = CollectionType.fromRecordValue(folder.getType());
+            SequenceCollection sequenceCollection = type.createSequenceCollection(create, folder.getId());
+            return sequenceCollection;
+        }
+    };
+    
     SequenceLibrary(Factory factory) {
         this.create = factory;
+        
+        foldersRoot = new DefaultSequenceCollectionList(this, null);
     }
     
     public SequenceCollection getFolderContent(long folderId) {
@@ -28,6 +44,15 @@ public class SequenceLibrary {
         SequenceCollection sequenceCollection = type.createSequenceCollection(create, folderId);
         
         return sequenceCollection;
+    }
+    
+    protected List<SequenceCollection> fetchCollections(Long parentId) {
+        return retrieveFolders(parentId).map(folderCollectionMapper);
+    }
+    
+    public SequenceCollectionList getRootCollectionList() {
+        foldersRoot.fetch();
+        return foldersRoot;
     }
     
     public GeneticSequenceRecord createRecord() {
@@ -55,7 +80,12 @@ public class SequenceLibrary {
         return create.executeUpdate(record) > 0;
     }
     
+    @Deprecated
     public List<FolderRecord> getFolders(Long parentId) {
+        return retrieveFolders(parentId);
+    }
+
+    private Result<FolderRecord> retrieveFolders(Long parentId) {
         Condition parentCondition;
         if (parentId == null) {
             parentCondition = FOLDER.PARENT_ID.isNull();
@@ -161,3 +191,5 @@ public class SequenceLibrary {
         return result > 0;
     }
 }
+
+

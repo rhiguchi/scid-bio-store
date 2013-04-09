@@ -86,20 +86,6 @@ class BasicSequenceCollection extends AbstractFolderSequenceCollection {
     }
 }
 
-class NodeSequenceCollection extends AbstractFolderSequenceCollection {
-
-    public NodeSequenceCollection(Factory factory, long folderId) {
-        super(factory, folderId);
-    }
-
-    @Override
-    protected List<IdentifiableRecord> retrieve() {
-        // TODO Auto-generated method stub
-        return Collections.emptyList();
-    }
-    
-}
-
 class FilterSequenceCollection extends AbstractFolderSequenceCollection {
     
     public FilterSequenceCollection(Factory factory, long folderId) {
