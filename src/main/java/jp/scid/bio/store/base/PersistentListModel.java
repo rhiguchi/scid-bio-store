@@ -62,7 +62,7 @@ abstract public class PersistentListModel<E> extends AbstractListModel {
     }
     
     // internal list handling
-    private void addAllToInternalList(int index, Collection<? extends E> newElements) {
+    protected void addAllToInternalList(int index, Collection<? extends E> newElements) {
         if (newElements.isEmpty()) {
             return;
         }
@@ -81,11 +81,11 @@ abstract public class PersistentListModel<E> extends AbstractListModel {
         fireIntervalAdded(this, index, index + newElements.size() - 1);
     }
 
-    private void addToInternalList(int index, E element) {
+    protected void addToInternalList(int index, E element) {
         addAllToInternalList(index, Collections.singleton(element));
     }
 
-    private E setElementToInternalList(int index, E element) {
+    protected E setElementToInternalList(int index, E element) {
         elementMap.put(getId(element), element);
         
         E old = elements.set(index, element);
@@ -93,7 +93,7 @@ abstract public class PersistentListModel<E> extends AbstractListModel {
         return old;
     }
     
-    private List<E> setElementsAt(int startIndex, Collection<? extends E> changes) {
+    protected List<E> setElementsAt(int startIndex, Collection<? extends E> changes) {
         List<E> result = new ArrayList<E>(changes.size());
         if (changes.isEmpty()) {
             return result;
@@ -111,7 +111,7 @@ abstract public class PersistentListModel<E> extends AbstractListModel {
         return subList;
     }
     
-    private E removeFromInternalList(int index) {
+    protected E removeFromInternalList(int index) {
         E element = elements.remove(index);
         elementMap.remove(getId(element));
         

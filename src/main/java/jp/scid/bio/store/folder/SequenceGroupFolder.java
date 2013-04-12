@@ -1,4 +1,4 @@
-package jp.scid.bio.store.element;
+package jp.scid.bio.store.folder;
 
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
 import jp.scid.bio.store.sequence.SequenceCollection;
@@ -8,7 +8,7 @@ import jp.scid.bio.store.sequence.SequenceCollection;
  * @author higuchi
  *
  */
-public class SequenceGroupFolder extends SequenceFolder {
+public class SequenceGroupFolder extends Folder {
 
     public SequenceGroupFolder(FolderRecord record) {
         super(record);

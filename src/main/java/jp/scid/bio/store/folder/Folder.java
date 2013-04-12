@@ -1,10 +1,8 @@
-package jp.scid.bio.store.element;
+package jp.scid.bio.store.folder;
 
 import jp.scid.bio.store.base.RecordModel;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
-import jp.scid.bio.store.sequence.BasicSequenceCollection;
 import jp.scid.bio.store.sequence.FolderContentGeneticSequence;
-import jp.scid.bio.store.sequence.GeneticSequence;
 import jp.scid.bio.store.sequence.SequenceCollection;
 
 /**
@@ -12,13 +10,13 @@ import jp.scid.bio.store.sequence.SequenceCollection;
  * @author higuchi
  *
  */
-public abstract class SequenceFolder extends RecordModel<FolderRecord> {
+public abstract class Folder extends RecordModel<FolderRecord> {
     
-    SequenceFolder(FolderRecord record) {
+    Folder(FolderRecord record) {
         super(record);
     }
     
-    public static SequenceFolder newFolderOf(CollectionType type) {
+    public static Folder newFolderOf(CollectionType type) {
         if (type == null) throw new IllegalArgumentException("type must not be null");
         return type.createFolder();
     }
@@ -77,7 +75,7 @@ public abstract class SequenceFolder extends RecordModel<FolderRecord> {
     }
 }
 
-class BasicSequenceFolder extends SequenceFolder {
+class BasicSequenceFolder extends Folder {
     private final SequenceCollection<FolderContentGeneticSequence> contents;
     
     public BasicSequenceFolder(FolderRecord record) {
@@ -92,7 +90,7 @@ class BasicSequenceFolder extends SequenceFolder {
     }
 }
 
-class FilterSequenceCollection extends SequenceFolder {
+class FilterSequenceCollection extends Folder {
     public FilterSequenceCollection(FolderRecord record) {
         super(record);
     }
