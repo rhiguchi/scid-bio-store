@@ -4,16 +4,18 @@ import static java.lang.String.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
 import javax.swing.AbstractListModel;
 
-abstract class AbstractPersistentList<E> extends AbstractListModel {
+abstract public class AbstractPersistentList<E> extends AbstractListModel {
     private final Map<Long, E> elementMap;
     private final List<E> elements;
     private long modificationValue = Long.MIN_VALUE;
@@ -33,17 +35,28 @@ abstract class AbstractPersistentList<E> extends AbstractListModel {
     public E getElementAt(int index) {
         return elements.get(index);
     }
-
-    private void addElement(int index, E element) {
-        Long key = getId(element);
-        E old = elementMap.put(key, element);
-        if (old != null) {
-            elementMap.put(key, old);
-            throw new IllegalStateException(format("id %d element already exists", key));
+    
+    private void addElementsAt(int index, Collection<? extends E> newElements) {
+        if (newElements.isEmpty()) {
+            return;
         }
         
-        elements.add(index, element);
-        fireIntervalAdded(this, index, index);
+        for (E element: newElements) {
+            Long key = getId(element);
+            E old = elementMap.put(key, element);
+            
+            if (old != null) {
+                elementMap.put(key, old);
+                throw new IllegalStateException(format("id %d element already exists", key));
+            }
+        }
+        
+        elements.addAll(index, newElements);
+        fireIntervalAdded(this, index, index + newElements.size() - 1);
+    }
+
+    private void addElementAt(int index, E element) {
+        addElementsAt(index, Collections.singleton(element));
     }
 
     private E setElementAt(int index, E element) {
@@ -52,6 +65,24 @@ abstract class AbstractPersistentList<E> extends AbstractListModel {
         E old = elements.set(index, element);
         fireContentsChanged(this, index, index);
         return old;
+    }
+    
+    private List<E> setElementsAt(int startIndex, Collection<? extends E> changes) {
+        List<E> result = new ArrayList<E>(changes.size());
+        if (changes.isEmpty()) {
+            return result;
+        }
+        
+        int end = startIndex + changes.size();
+        
+        List<E> subList = elements.subList(startIndex, end);
+        result.addAll(subList);
+        subList.clear();
+        
+        elements.addAll(startIndex, changes);
+        fireContentsChanged(this, startIndex, end - 1);
+        
+        return subList;
     }
     
     private E removeElementAt(int index) {
@@ -73,7 +104,7 @@ abstract class AbstractPersistentList<E> extends AbstractListModel {
     }
     
     public void add(int index, E element) {
-        addElement(index, element);
+        addElementAt(index, element);
         insertIntoStore(element);
     }
     
@@ -100,38 +131,99 @@ abstract class AbstractPersistentList<E> extends AbstractListModel {
         
         List<E> newElements = retrieve();
         
-        for (ListIterator<Boolean> it = getMapForContaining(elements, getIdSet(newElements)).listIterator(); it.hasNext(); ) {
-            boolean isDeletion = !it.next().booleanValue();
-            if (isDeletion) {
-                int index = it.previousIndex();
-                removeElementAt(index);
-            }
+        for (int index: getIndicesForNotContaining(elements, getIdSet(newElements))) {
+            removeElementAt(index);
         }
         
-        for (ListIterator<Boolean> it = getMapForContaining(newElements, getElementIdSet()).listIterator(); it.hasNext(); ) {
-            int index = it.nextIndex();
-            E retrievedElement = newElements.get(index);
-            boolean isInsertion = !it.next().booleanValue();
+        List<int[]> ranges = toRangeList(getIndicesForNotContaining(newElements, getElementIdSet()));
+        int lastInsertEnd = 0;
+        
+        for (int[] insertRange: ranges) {
+            int insertStart = insertRange[0];
+            int insertEnd = insertRange[1];
             
-            // insert
-            if (isInsertion) {
-                addElement(index, retrievedElement);
-            }
-            // update
-            else {
-                setElementAt(index, retrievedElement);
-            }
+            List<E> changedElements = newElements.subList(lastInsertEnd, insertStart);
+            setElementsAt(lastInsertEnd, changedElements);
+            
+            List<E> retrievedElements = newElements.subList(insertStart, insertEnd);
+            addElementsAt(insertStart, retrievedElements);
+            
+            lastInsertEnd = insertEnd;
         }
+        
+        setElementsAt(lastInsertEnd, newElements.subList(lastInsertEnd, newElements.size()));
+    }
+    
+    private static List<int[]> toRangeList(List<Integer> indices) {
+        if (indices.isEmpty()) {
+            return Collections.emptyList();
+        }
+        
+        List<int[]> ranges = new LinkedList<int[]>();
+        
+        Iterator<Integer> it = indices.iterator();
+        int lastStart = it.next();
+        int lastEnd = lastStart + 1;
+        
+        while (it.hasNext()) {
+            int index = it.next();
+            if (index == lastEnd) {
+                lastEnd++;
+                continue;
+            }
+            
+            int[] range = new int[]{lastStart, lastEnd};
+            ranges.add(range);
+            
+            lastStart = index;
+            lastEnd = lastStart + 1;
+        }
+        
+        int[] range = new int[]{lastStart, lastEnd};
+        ranges.add(range);
+        
+        return ranges;
     }
 
-    private List<Boolean> getMapForContaining(List<? extends E> elements, Set<Long> idSet) {
-        List<Boolean> map = new ArrayList<Boolean>(elements.size());
-        for (E element: elements) {
-            Long key = getId(element);
-            Boolean value = Boolean.valueOf(idSet.contains(key));
-            map.add(value);
+    private static List<Integer> getIndicesForNotContaining(Iterator<Long> it, Set<Long> idSet) {
+        List<Integer> indices = new LinkedList<Integer>();
+        
+        for (int index = 0; it.hasNext(); index++) {
+            Long key = it.next();
+            if (!idSet.contains(key)) {
+                indices.add(index);
+            }
         }
-        return map;
+        return indices;
+    }
+    
+    private List<Integer> getIndicesForNotContaining(Iterable<? extends E> collection, Set<Long> idSet) {
+        ElementIdIterator ite = new ElementIdIterator(collection.iterator());
+        return getIndicesForNotContaining(ite, idSet);
+    }
+    
+    private class ElementIdIterator implements Iterator<Long> {
+        private final Iterator<? extends E> elementIterator;
+        
+        public ElementIdIterator(Iterator<? extends E> elementIterator) {
+            this.elementIterator = elementIterator;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return elementIterator.hasNext();
+        }
+
+        @Override
+        public Long next() {
+            E e = elementIterator.next();
+            return getId(e);
+        }
+
+        @Override
+        public void remove() {
+            elementIterator.remove();
+        }
     }
     
     private Set<Long> getIdSet(Collection<E> elements) {
@@ -163,24 +255,5 @@ abstract class AbstractPersistentList<E> extends AbstractListModel {
     
     protected long retrieveModificationValue() {
         return Long.MIN_VALUE;
-    }
-    
-    static class PersistentElement<E> {
-        private final long id;
-        private final E element;
-        
-        public PersistentElement(long id, E element) {
-            super();
-            this.id = id;
-            this.element = element;
-        }
-
-        public long getId() {
-            return id;
-        }
-        
-        public E getElement() {
-            return element;
-        }
     }
 }
