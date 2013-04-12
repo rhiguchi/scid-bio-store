@@ -5,15 +5,14 @@ import static jp.scid.bio.store.jooq.Tables.*;
 import java.util.List;
 
 import jp.scid.bio.store.collection.DefaultSequenceFolderList;
-import jp.scid.bio.store.collection.SequenceCollection;
 import jp.scid.bio.store.collection.SequenceFolderList;
-import jp.scid.bio.store.collection.SequenceFolderList.Source;
 import jp.scid.bio.store.element.CollectionType;
 import jp.scid.bio.store.element.SequenceFolder;
 import jp.scid.bio.store.jooq.Tables;
 import jp.scid.bio.store.jooq.tables.records.CollectionItemRecord;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
+import jp.scid.bio.store.sequence.LibrarySequenceCollection;
 
 import org.jooq.Condition;
 import org.jooq.RecordMapper;
@@ -25,12 +24,20 @@ public class SequenceLibrary {
     
     private final DefaultSequenceFolderList rootFolderList;
     
+    private final LibrarySequenceCollection allSequences;
+    
+    private final GeneticSequenceParser parser;
+    
     private final JooqSource folderListSource;
     
     SequenceLibrary(Factory factory) {
         this.create = factory;
         
+        parser = new GeneticSequenceParser();
+        
         folderListSource = new JooqSource(factory);
+        
+        allSequences = LibrarySequenceCollection.fromFactory(factory, parser);
         
         rootFolderList = new DefaultSequenceFolderList(folderListSource, null);
     }
@@ -38,6 +45,11 @@ public class SequenceLibrary {
     
     public SequenceFolderList getRootFolderList() {
         return rootFolderList;
+    }
+    
+    public LibrarySequenceCollection getAllSequences() {
+        allSequences.fetch();
+        return allSequences;
     }
     
     public GeneticSequenceRecord createRecord() {

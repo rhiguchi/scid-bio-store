@@ -23,6 +23,14 @@ public abstract class RecordModel<R extends Record> {
     
     abstract protected R createRecord();
 
+    abstract public Long id();
+    
+    abstract protected void setId(Long id);
+    
+    abstract protected boolean delete();
+    
+    abstract protected boolean save();
+    
     public void attach(Configuration configuration) {
         record.attach(configuration);
     }

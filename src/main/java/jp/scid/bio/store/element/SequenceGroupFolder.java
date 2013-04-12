@@ -1,9 +1,7 @@
 package jp.scid.bio.store.element;
 
-import jp.scid.bio.store.collection.DefaultSequenceFolderList;
-import jp.scid.bio.store.collection.SequenceCollection;
-import jp.scid.bio.store.collection.SequenceFolderList;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
+import jp.scid.bio.store.sequence.SequenceCollection;
 
 /**
  * 子フォルダをもつフォルダ
