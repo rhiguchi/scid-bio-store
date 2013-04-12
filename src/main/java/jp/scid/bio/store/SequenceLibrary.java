@@ -35,7 +35,7 @@ public class SequenceLibrary {
     SequenceLibrary(Factory factory) {
         this.create = factory;
         
-        foldersRoot = new DefaultSequenceCollectionList(this, null);
+        foldersRoot = new DefaultSequenceCollectionList(factory, null);
     }
     
     public SequenceCollection getFolderContent(long folderId) {

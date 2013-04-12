@@ -7,16 +7,17 @@ import java.io.IOException;
 
 import javax.swing.ListModel;
 
+import jp.scid.bio.store.GeneticSequence;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
 
 import org.jooq.Field;
 import org.jooq.Table;
 import org.jooq.impl.Factory;
 
-public interface SequenceCollection extends ListModel, Iterable<GeneticSequenceRecord> {
+public interface SequenceCollection extends ListModel {
     public void fetch();
     
-    public GeneticSequenceRecord getElementAt(int index);
+    public GeneticSequence getElementAt(int index);
 }
 
 interface MutableSequenceCollection extends SequenceCollection {

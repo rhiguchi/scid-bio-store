@@ -1,50 +1,97 @@
 package jp.scid.bio.store;
 
+import static jp.scid.bio.store.jooq.Tables.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractListModel;
 import javax.swing.ListModel;
 
+import org.jooq.Condition;
+import org.jooq.RecordMapper;
+import org.jooq.Result;
+import org.jooq.impl.Factory;
+
+import jp.scid.bio.store.collection.AbstractSequenceCollection;
+import jp.scid.bio.store.collection.CollectionType;
 import jp.scid.bio.store.collection.SequenceCollection;
+import jp.scid.bio.store.jooq.Tables;
+import jp.scid.bio.store.jooq.tables.records.FolderRecord;
 
 public interface SequenceCollectionList extends ListModel {
     @Override
     public SequenceCollection getElementAt(int index);
 }
 
-abstract class AbstractSequenceCollectionList extends AbstractListModel implements SequenceCollectionList {
-    private final SequenceLibrary library;
-    private final Long parentFolderId;
-
-    private final List<SequenceCollection> elements;
+class DefaultSequenceCollectionList extends JooqTableContents<SequenceCollection> implements SequenceCollectionList, RecordMapper<FolderRecord, SequenceCollection> {
+    private final Long folderId;
     
-    public AbstractSequenceCollectionList(SequenceLibrary library, Long parentFolderId) {
-        this.library = library;
-        this.parentFolderId = parentFolderId;
+    public DefaultSequenceCollectionList(Factory factory, Long folderId) {
+        super(factory);
+        this.folderId = folderId;
+    }
+
+    public SequenceCollection createElement() {
+        return createElement(CollectionType.BASIC);
+    }
+    
+    public SequenceCollection createElement(CollectionType type) {
+        FolderRecord record = create.newRecord(Tables.FOLDER);
+        record.setId(null);
+        record.setType(type.getDbValue());
         
-        elements = new ArrayList<SequenceCollection>();
-    }
-
-    public void fetch() {
-        List<SequenceCollection> children = library.fetchCollections(parentFolderId);
-        // TODO sync
+        SequenceCollection collection = map(record);
+//        collection.setName(getNewFolderName(type));
+        
+        return collection;
     }
 
     @Override
-    public int getSize() {
-        return elements.size();
+    public SequenceCollection map(FolderRecord record) {
+        return null; // TODO AbstractSequenceCollection.createCollection(create, record);
+    }
+
+    protected List<SequenceCollection> retrieve() {
+        Result<FolderRecord> result = create
+                .selectFrom(Tables.FOLDER)
+                .where(FOLDER.PARENT_ID.eq(folderId))
+                .fetch();
+        
+        return result.map(this);
     }
     
     @Override
-    public SequenceCollection getElementAt(int index) {
-        return elements.get(index);
+    public String getTableName() {
+        return Tables.FOLDER.getName();
     }
-}
-
-class DefaultSequenceCollectionList extends AbstractSequenceCollectionList {
     
-    public DefaultSequenceCollectionList(SequenceLibrary library, Long parentFolderId) {
-        super(library, parentFolderId);
+    protected String getNewFolderName(CollectionType type) {
+        return "New " + type.name(); // TODO
     }
+
+    @Override
+    protected Long getId(SequenceCollection element) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    protected boolean deleteFromStore(SequenceCollection element) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    protected boolean insertIntoStore(SequenceCollection element) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    protected boolean update(SequenceCollection element) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+    
 }

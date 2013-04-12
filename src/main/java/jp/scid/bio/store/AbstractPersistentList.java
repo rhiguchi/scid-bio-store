@@ -103,12 +103,12 @@ abstract public class AbstractPersistentList<E> extends AbstractListModel {
         return element;
     }
     
-    public void add(int index, E element) {
+    protected void add(int index, E element) {
         addElementAt(index, element);
         insertIntoStore(element);
     }
     
-    public void add(E element) {
+    protected void add(E element) {
         add(getSize(), element);
     }
     

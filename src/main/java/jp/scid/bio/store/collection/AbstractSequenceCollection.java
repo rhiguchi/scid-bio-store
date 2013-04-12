@@ -1,224 +1,135 @@
 package jp.scid.bio.store.collection;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
+import static org.jooq.impl.Factory.*;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.NavigableSet;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.Map.Entry;
 
-import javax.swing.AbstractListModel;
-
+import jp.scid.bio.store.GeneticSequence;
+import jp.scid.bio.store.JooqTableContents;
 import jp.scid.bio.store.jooq.Tables;
+import jp.scid.bio.store.jooq.tables.records.CollectionItemRecord;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
 
 import org.jooq.Field;
 import org.jooq.Record;
-import org.jooq.RecordMapper;
 import org.jooq.Result;
 import org.jooq.impl.Factory;
 
-abstract class AbstractSequenceCollection extends AbstractListModel implements SequenceCollection {
-    final Factory create;
-    
+public abstract class AbstractSequenceCollection<E extends GeneticSequence> extends JooqTableContents<E> implements SequenceCollection {
     private final LastModificationCheck modificationCheck;
     
-    private final List<GeneticSequenceRecord> elements;
-
-    private final NavigableSet<Long> identifierSet;
-    
     public AbstractSequenceCollection(Factory factory) {
-        this.create = factory;
+        super(factory);
         modificationCheck = new LastModificationCheck(factory, Tables.GENETIC_SEQUENCE.getName());
-        elements = new ArrayList<GeneticSequenceRecord>();
-        identifierSet = new TreeSet<Long>();
-    }
-    
-    public void fetch() {
-        modificationCheck.checkUpdated();
-        
-        SortedMap<Long, GeneticSequenceRecord> recordMap = new TreeMap<Long, GeneticSequenceRecord>();
-        
-        for (IdentifiableRecord record: retrieve()) {
-            recordMap.put(record.getKey(), record.getValue());
-        }
-        
-        // deletion
-        List<Integer> removedIndices = retainAll(recordMap.keySet());
-        
-        for (int index: removedIndices) {
-            removeElement(index);
-        }
-        
-        List<Integer> insertedIndices = addAll(recordMap.keySet());
-        ArrayList<GeneticSequenceRecord> newValues = new ArrayList<GeneticSequenceRecord>(recordMap.values());
-        
-        int lastStart = 0;
-        for (int insertedIndex: insertedIndices) {
-            List<GeneticSequenceRecord> changes = newValues.subList(lastStart, insertedIndex);
-            replaceElements(lastStart, changes);
-            lastStart = insertedIndex;
-            
-            addElement(insertedIndex, newValues.get(insertedIndex));
-        }
     }
 
-
-    private List<Integer> retainAll(Set<Long> newRecords) {
-        List<Integer> removedIndices = new LinkedList<Integer>();
-        int index = 0;
-        for (Iterator<Long> ite = identifierSet.iterator(); ite.hasNext(); index++) {
-            Long key = ite.next();
-            if (newRecords.contains(key)) {
-                continue;
-            }
-            
-            ite.remove();
-            removedIndices.add(index);
-        }
+    public GeneticSequenceRecord addFile(File file) throws IOException {
+        GeneticSequenceRecord newRecord = create.newRecord(Tables.GENETIC_SEQUENCE);
+        newRecord.setId(null);
+        newRecord.setName("Untitiled");
         
-        return removedIndices;
-    }
-    
-    private List<Integer> addAll(Collection<Long> newRecords) {
-        List<Integer> insertedIndices = new LinkedList<Integer>();
-        int index = 0;
-        for (Iterator<Long> ite = newRecords.iterator(); ite.hasNext(); index++) {
-            Long id = ite.next();
-            
-            if (!identifierSet.add(id)) {
-                insertedIndices.add(index);
-            }
-        }
+//        addRecord(newRecord);
         
-        return insertedIndices;
-    }
-    
-    public boolean addOrUpdate(Long key, GeneticSequenceRecord record) {
-        if (key == null) throw new IllegalArgumentException("key must not be null");
-        if (record == null) throw new IllegalArgumentException("record must not be null");
-
-        boolean isInserted = identifierSet.add(key);
-        int index = identifierSet.headSet(key).size();
-        if (isInserted) {
-            addElement(index, record);
-        }
-        else {
-            updateElement(index, record);
-        }
-        
-        return isInserted;
+        return newRecord;
     }
 
-    private void updateElement(int index, GeneticSequenceRecord element) {
-        elements.set(index, element);
-        fireContentsChanged(this, index, index);
-    }
-
-    private void replaceElements(int startIndex, List<GeneticSequenceRecord> changes) {
-        if (!changes.isEmpty()) {
-            int end = startIndex + changes.size();
-            elements.subList(startIndex, end).clear();
-            elements.addAll(startIndex, changes);
-            fireContentsChanged(this, startIndex, end - 1);
-        }
-    }
-    
-    private void addElement(int index, GeneticSequenceRecord element) {
-        elements.add(index, element);
-        fireIntervalAdded(this, index, index);
-    }
-    
-    private void removeElement(int index) {
-        elements.remove(index);
-        fireIntervalRemoved(this, index, index);
-    }
-    
-    protected abstract List<IdentifiableRecord> retrieve();
-    
     @Override
-    public GeneticSequenceRecord getElementAt(int index) {
-        return elements.get(index);
+    protected boolean deleteFromStore(GeneticSequence element) {
+        return element.delete();
     }
     
     @Override
-    public int getSize() {
-        return elements.size();
+    protected boolean update(GeneticSequence element) {
+        return element.store();
     }
     
     @Override
-    public Iterator<GeneticSequenceRecord> iterator() {
-        return elements.iterator();
-    }
-    
-    static class IdentifiableRecord implements Entry<Long, GeneticSequenceRecord> {
-        private final Long key;
-        private GeneticSequenceRecord value;
-        
-        public IdentifiableRecord(Long key, GeneticSequenceRecord value) {
-            this.key = key;
-            this.value = value;
-        }
-
-        @Override
-        public Long getKey() {
-            return key;
-        }
-
-        @Override
-        public GeneticSequenceRecord getValue() {
-            return value;
-        }
-
-        @Override
-        public GeneticSequenceRecord setValue(GeneticSequenceRecord value) {
-            GeneticSequenceRecord old = this.value;
-            this.value = value;
-            return old;
-        }
-    }
-    
-    static class IdentifiableRecordMapper implements RecordMapper<Record, IdentifiableRecord> {
-        private final Field<Long> idField;
-        
-        public IdentifiableRecordMapper(Field<Long> idField) {
-            this.idField = idField;
-        }
-
-        @Override
-        public IdentifiableRecord map(Record record) {
-            Long id = record.getValue(idField);
-            GeneticSequenceRecord gsRecord = record.into(Tables.GENETIC_SEQUENCE);
-            return new IdentifiableRecord(id, gsRecord);
-        }
+    protected Long getId(GeneticSequence element) {
+        return element.getLookupValue();
     }
 }
 
-class LibraryDelegate extends AbstractSequenceCollection {
-    private final static RecordMapper<GeneticSequenceRecord, IdentifiableRecord> MAPPER =
-            new RecordMapper<GeneticSequenceRecord, IdentifiableRecord>() {
-        @Override
-        public IdentifiableRecord map(GeneticSequenceRecord record) {
-            return new IdentifiableRecord(record.getId(), record);
-        }
-    };
+class LibraryDelegate extends AbstractSequenceCollection<GeneticSequence> {
     
     public LibraryDelegate(Factory factory) {
         super(factory);
     }
 
     @Override
-    protected List<IdentifiableRecord> retrieve() {
+    protected List<GeneticSequence> retrieve() {
         Result<GeneticSequenceRecord> result = create.selectFrom(Tables.GENETIC_SEQUENCE)
-                .orderBy(Tables.GENETIC_SEQUENCE.ID.asc())
                 .fetch();
+        return result.map(GeneticSequence.getDefaultMapper());
+    }
+
+    @Override
+    public String getTableName() {
+        return Tables.GENETIC_SEQUENCE.getName();
+    }
+
+    @Override
+    protected boolean insertIntoStore(GeneticSequence element) {
+        element.attach(create);
+        element.setValue(Tables.GENETIC_SEQUENCE.ID, null);
+        return element.store();
+    }
+}
+
+class BasicSequenceCollection extends AbstractSequenceCollection<GeneticSequence> {
+    final static Field<Long> LAST_MODIFICATION = fieldByName(Long.class, "last_modification");
+    final static Field<String> TABLE_NAME = fieldByName(String.class, "table_name");
+    
+    private final long folderId;
+    
+    public BasicSequenceCollection(Factory factory, long folderId) {
+        super(factory);
         
-        List<IdentifiableRecord> list = result.map(MAPPER);
-        return list;
+        this.folderId = folderId;
+    }
+    
+    @Override
+    protected List<GeneticSequence> retrieve() {
+        LinkedList<Field<?>> fields = new LinkedList<Field<?>>(Tables.GENETIC_SEQUENCE.getFields());
+        fields.addFirst(Tables.COLLECTION_ITEM.ID);
+        fields.addFirst(Tables.COLLECTION_ITEM.FOLDER_ID);
+        
+        Result<Record> result = create.select(fields)
+                .from(Tables.COLLECTION_ITEM)
+                .join(Tables.GENETIC_SEQUENCE)
+                .on(Tables.COLLECTION_ITEM.GENETIC_SEQUENCE_ID.eq(Tables.GENETIC_SEQUENCE.ID))
+                .orderBy(Tables.COLLECTION_ITEM.ID)
+                .fetch();
+        return result.map(GeneticSequence.getFolderContentMapper());
+    }
+    
+    public void addRecord(GeneticSequenceRecord record) {
+        if (record == null) throw new IllegalArgumentException("record must not be null");
+        
+        record.store();
+        
+        CollectionItemRecord item = create.newRecord(Tables.COLLECTION_ITEM);
+        item.setFolderId(folderId);
+        item.setGeneticSequenceId(record);
+        item.store();
+
+        Long lookupId = item.getId();
+        
+    }
+
+    @Override
+    public String getTableName() {
+        return Tables.COLLECTION_ITEM.getName();
+    }
+
+    @Override
+    protected boolean insertIntoStore(GeneticSequence element) {
+        CollectionItemRecord item = create.newRecord(Tables.COLLECTION_ITEM);
+        item.setFolderId(folderId);
+        item.setGeneticSequenceId(element.getId());
+        
+        return item.store() > 0;
     }
 }

@@ -4,11 +4,10 @@ import java.util.Collections;
 import java.util.List;
 
 import jp.scid.bio.store.SequenceCollectionList;
-import jp.scid.bio.store.collection.AbstractSequenceCollection.IdentifiableRecord;
 
 import org.jooq.impl.Factory;
 
-public interface SequenceCollectionFolder extends SequenceCollection {
+public interface SequenceCollectionFolder {
     
     SequenceCollectionList fetchChildCollections();
 }
