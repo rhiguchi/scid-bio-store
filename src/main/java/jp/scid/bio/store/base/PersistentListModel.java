@@ -1,4 +1,4 @@
-package jp.scid.bio.store.collection;
+package jp.scid.bio.store.base;
 
 import static java.lang.String.*;
 
@@ -15,12 +15,12 @@ import java.util.Set;
 
 import javax.swing.AbstractListModel;
 
-abstract public class AbstractPersistentList<E> extends AbstractListModel {
+abstract public class PersistentListModel<E> extends AbstractListModel {
     private final Map<Long, E> elementMap;
     private final List<E> elements;
     private long modificationValue = Long.MIN_VALUE;
     
-    public AbstractPersistentList() {
+    public PersistentListModel() {
         elements = new ArrayList<E>();
         
         elementMap = new HashMap<Long, E>();

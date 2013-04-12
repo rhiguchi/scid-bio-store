@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import jp.scid.bio.store.GeneticSequenceParser;
+import jp.scid.bio.store.base.RecordModel;
 import jp.scid.bio.store.jooq.Tables;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
 
@@ -11,7 +12,7 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.RecordMapper;
 
-public class GeneticSequence extends JooqRecordModel<GeneticSequenceRecord> {
+public class GeneticSequence extends RecordModel<GeneticSequenceRecord> {
     
     static GeneticSequence newFolderContent(long folderId, long contentId, GeneticSequenceRecord record) {
         return new FolderContentGeneticSequence();

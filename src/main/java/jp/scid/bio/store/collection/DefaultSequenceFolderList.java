@@ -2,11 +2,12 @@ package jp.scid.bio.store.collection;
 
 import java.util.List;
 
+import jp.scid.bio.store.base.PersistentListModel;
 import jp.scid.bio.store.element.CollectionType;
 import jp.scid.bio.store.element.SequenceFolder;
 import jp.scid.bio.store.jooq.Tables;
 
-public class DefaultSequenceFolderList extends AbstractPersistentList<SequenceFolder> implements SequenceFolderList {
+public class DefaultSequenceFolderList extends PersistentListModel<SequenceFolder> implements SequenceFolderList {
     private final Long folderId;
     private final Source source;
     

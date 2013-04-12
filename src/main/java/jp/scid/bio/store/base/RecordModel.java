@@ -1,4 +1,4 @@
-package jp.scid.bio.store.element;
+package jp.scid.bio.store.base;
 
 import org.jooq.AttachableInternal;
 import org.jooq.Configuration;
@@ -6,14 +6,14 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.impl.Factory;
 
-abstract class JooqRecordModel<R extends Record> {
+public abstract class RecordModel<R extends Record> {
     protected final R record;
 
-    public JooqRecordModel() {
+    public RecordModel() {
         this(null);
     }
     
-    public JooqRecordModel(R record) {
+    public RecordModel(R record) {
         this.record = record == null ? createRecord() : record;
     }
     

@@ -1,5 +1,6 @@
 package jp.scid.bio.store.element;
 
+import jp.scid.bio.store.base.RecordModel;
 import jp.scid.bio.store.collection.SequenceCollection;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
 
@@ -8,7 +9,7 @@ import jp.scid.bio.store.jooq.tables.records.FolderRecord;
  * @author higuchi
  *
  */
-public abstract class SequenceFolder extends JooqRecordModel<FolderRecord> {
+public abstract class SequenceFolder extends RecordModel<FolderRecord> {
     
     SequenceFolder(FolderRecord record) {
         super(record);
