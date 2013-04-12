@@ -1,4 +1,4 @@
-package jp.scid.bio.store;
+package jp.scid.bio.store.collection;
 
 import static java.lang.String.*;
 
@@ -35,8 +35,34 @@ abstract public class AbstractPersistentList<E> extends AbstractListModel {
     public E getElementAt(int index) {
         return elements.get(index);
     }
+
+    public E getElement(long id) {
+        return elementMap.get(id);
+    }
+
+    protected void add(int index, E element) {
+        addToInternalList(index, element);
+        insertIntoStore(element);
+    }
     
-    private void addElementsAt(int index, Collection<? extends E> newElements) {
+    protected void add(E element) {
+        add(getSize(), element);
+    }
+
+    protected void updated(int index) {
+        E e = getElementAt(index);
+        update(e);
+        setElementToInternalList(index, e);
+    }
+    
+    protected E remove(int index) {
+        E element = removeFromInternalList(index);
+        deleteFromStore(element);
+        return element;
+    }
+    
+    // internal list handling
+    private void addAllToInternalList(int index, Collection<? extends E> newElements) {
         if (newElements.isEmpty()) {
             return;
         }
@@ -55,11 +81,11 @@ abstract public class AbstractPersistentList<E> extends AbstractListModel {
         fireIntervalAdded(this, index, index + newElements.size() - 1);
     }
 
-    private void addElementAt(int index, E element) {
-        addElementsAt(index, Collections.singleton(element));
+    private void addToInternalList(int index, E element) {
+        addAllToInternalList(index, Collections.singleton(element));
     }
 
-    private E setElementAt(int index, E element) {
+    private E setElementToInternalList(int index, E element) {
         elementMap.put(getId(element), element);
         
         E old = elements.set(index, element);
@@ -85,7 +111,7 @@ abstract public class AbstractPersistentList<E> extends AbstractListModel {
         return subList;
     }
     
-    private E removeElementAt(int index) {
+    private E removeFromInternalList(int index) {
         E element = elements.remove(index);
         elementMap.remove(getId(element));
         
@@ -93,31 +119,7 @@ abstract public class AbstractPersistentList<E> extends AbstractListModel {
         return element;
     }
     
-    public E getElement(long id) {
-        return elementMap.get(id);
-    }
-    
-    public E remove(int index) {
-        E element = removeElementAt(index);
-        deleteFromStore(element);
-        return element;
-    }
-    
-    protected void add(int index, E element) {
-        addElementAt(index, element);
-        insertIntoStore(element);
-    }
-    
-    protected void add(E element) {
-        add(getSize(), element);
-    }
-    
-    public void updated(int index) {
-        E e = getElementAt(index);
-        update(e);
-        setElementAt(index, e);
-    }
-    
+    // retrieving
     public void fetch() {
         fetch(false);
     }
@@ -132,7 +134,7 @@ abstract public class AbstractPersistentList<E> extends AbstractListModel {
         List<E> newElements = retrieve();
         
         for (int index: getIndicesForNotContaining(elements, getIdSet(newElements))) {
-            removeElementAt(index);
+            removeFromInternalList(index);
         }
         
         List<int[]> ranges = toRangeList(getIndicesForNotContaining(newElements, getElementIdSet()));
@@ -146,7 +148,7 @@ abstract public class AbstractPersistentList<E> extends AbstractListModel {
             setElementsAt(lastInsertEnd, changedElements);
             
             List<E> retrievedElements = newElements.subList(insertStart, insertEnd);
-            addElementsAt(insertStart, retrievedElements);
+            addAllToInternalList(insertStart, retrievedElements);
             
             lastInsertEnd = insertEnd;
         }
@@ -202,6 +204,40 @@ abstract public class AbstractPersistentList<E> extends AbstractListModel {
         return getIndicesForNotContaining(ite, idSet);
     }
     
+    private Set<Long> getIdSet(Collection<E> elements) {
+        Set<Long> set = new HashSet<Long>(elements.size(), 1f);
+        for (E e: elements) {
+            set.add(getId(e));
+        }
+        return set;
+    }
+
+    private Set<Long> getElementIdSet() {
+        return elementMap.keySet();
+    }
+    
+    // store
+    protected abstract Long getId(E element);
+    
+    protected abstract List<E> retrieve();
+    
+    abstract protected boolean deleteFromStore(E element);
+    
+    abstract protected boolean insertIntoStore(E element);
+    
+    abstract protected boolean update(E element);
+    
+    // modification
+    public final boolean checkModification() {
+        long newVal = retrieveModificationValue();
+        return modificationValue < (modificationValue = newVal);
+    }
+    
+    protected long retrieveModificationValue() {
+        return Long.MIN_VALUE;
+    }
+    
+    // internal class
     private class ElementIdIterator implements Iterator<Long> {
         private final Iterator<? extends E> elementIterator;
         
@@ -224,36 +260,5 @@ abstract public class AbstractPersistentList<E> extends AbstractListModel {
         public void remove() {
             elementIterator.remove();
         }
-    }
-    
-    private Set<Long> getIdSet(Collection<E> elements) {
-        Set<Long> set = new HashSet<Long>(elements.size(), 1f);
-        for (E e: elements) {
-            set.add(getId(e));
-        }
-        return set;
-    }
-
-    private Set<Long> getElementIdSet() {
-        return elementMap.keySet();
-    }
-    
-    protected abstract Long getId(E element);
-    
-    protected abstract List<E> retrieve();
-    
-    abstract protected boolean deleteFromStore(E element);
-    
-    abstract protected boolean insertIntoStore(E element);
-    
-    abstract protected boolean update(E element);
-    
-    public final boolean checkModification() {
-        long newVal = retrieveModificationValue();
-        return modificationValue < (modificationValue = newVal);
-    }
-    
-    protected long retrieveModificationValue() {
-        return Long.MIN_VALUE;
     }
 }

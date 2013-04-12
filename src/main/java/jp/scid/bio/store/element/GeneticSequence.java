@@ -1,14 +1,17 @@
-package jp.scid.bio.store;
+package jp.scid.bio.store.element;
 
+import java.io.File;
+import java.io.IOException;
+
+import jp.scid.bio.store.GeneticSequenceParser;
 import jp.scid.bio.store.jooq.Tables;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
 
-import org.jooq.Configuration;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.RecordMapper;
 
-public class GeneticSequence extends JooqRecordHolder<GeneticSequenceRecord> {
+public class GeneticSequence extends JooqRecordModel<GeneticSequenceRecord> {
     
     static GeneticSequence newFolderContent(long folderId, long contentId, GeneticSequenceRecord record) {
         return new FolderContentGeneticSequence();
@@ -30,8 +33,7 @@ public class GeneticSequence extends JooqRecordHolder<GeneticSequenceRecord> {
         return record.store() > 0;
     }
     
-    @Override
-    public long getId() {
+    public Long getId() {
         return record.getId();
     }
     
@@ -62,44 +64,13 @@ public class GeneticSequence extends JooqRecordHolder<GeneticSequenceRecord> {
             return newFolderContent(0, id, gsRecord);
         }
     }
+
+    public void loadFrom(File file, GeneticSequenceParser parser) throws IOException {
+        // TODO Auto-generated method stub
+        
+    }
 }
 
 class FolderContentGeneticSequence extends GeneticSequence {
     
-}
-
-abstract class JooqRecordHolder<R extends Record> {
-    protected final R record;
-
-    public JooqRecordHolder() {
-        this(null);
-    }
-    
-    public JooqRecordHolder(R record) {
-        if (record == null) {
-            record = createRecord();
-        }
-        
-        this.record = record;
-    }
-    
-    abstract protected R createRecord();
-
-    public abstract long getId();
-    
-    public void attach(Configuration configuration) {
-        record.attach(configuration);
-    }
-    
-    public <T> T getValue(Field<T> field) throws IllegalArgumentException {
-        return record.getValue(field);
-    }
-
-    public <T> void setValue(Field<T> field, T value) {
-        record.setValue(field, value);
-    }
-
-    public boolean changed() {
-        return record.changed();
-    }
 }

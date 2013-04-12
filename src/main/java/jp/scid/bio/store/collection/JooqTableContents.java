@@ -1,4 +1,4 @@
-package jp.scid.bio.store;
+package jp.scid.bio.store.collection;
 
 import static org.jooq.impl.Factory.*;
 

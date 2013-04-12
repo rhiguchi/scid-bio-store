@@ -4,8 +4,12 @@ import static jp.scid.bio.store.jooq.Tables.*;
 
 import java.util.List;
 
-import jp.scid.bio.store.collection.CollectionType;
+import jp.scid.bio.store.collection.DefaultSequenceFolderList;
 import jp.scid.bio.store.collection.SequenceCollection;
+import jp.scid.bio.store.collection.SequenceFolderList;
+import jp.scid.bio.store.collection.SequenceFolderList.Source;
+import jp.scid.bio.store.element.CollectionType;
+import jp.scid.bio.store.element.SequenceFolder;
 import jp.scid.bio.store.jooq.Tables;
 import jp.scid.bio.store.jooq.tables.records.CollectionItemRecord;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
@@ -19,40 +23,21 @@ import org.jooq.impl.Factory;
 public class SequenceLibrary {
     private final Factory create;
     
-    private final DefaultSequenceCollectionList foldersRoot;
+    private final DefaultSequenceFolderList rootFolderList;
     
-    private final RecordMapper<FolderRecord, SequenceCollection> folderCollectionMapper =
-            new RecordMapper<FolderRecord, SequenceCollection>() {
-        
-        @Override
-        public SequenceCollection map(FolderRecord folder) {
-            CollectionType type = CollectionType.fromRecordValue(folder.getType());
-            SequenceCollection sequenceCollection = type.createSequenceCollection(create, folder.getId());
-            return sequenceCollection;
-        }
-    };
+    private final JooqSource folderListSource;
     
     SequenceLibrary(Factory factory) {
         this.create = factory;
         
-        foldersRoot = new DefaultSequenceCollectionList(factory, null);
-    }
-    
-    public SequenceCollection getFolderContent(long folderId) {
-        FolderRecord folder = findFolder(folderId);
-        CollectionType type = CollectionType.fromRecordValue(folder.getType());
-        SequenceCollection sequenceCollection = type.createSequenceCollection(create, folderId);
+        folderListSource = new JooqSource(factory);
         
-        return sequenceCollection;
+        rootFolderList = new DefaultSequenceFolderList(folderListSource, null);
     }
     
-    protected List<SequenceCollection> fetchCollections(Long parentId) {
-        return retrieveFolders(parentId).map(folderCollectionMapper);
-    }
     
-    public SequenceCollectionList getRootCollectionList() {
-        foldersRoot.fetch();
-        return foldersRoot;
+    public SequenceFolderList getRootFolderList() {
+        return rootFolderList;
     }
     
     public GeneticSequenceRecord createRecord() {
@@ -189,6 +174,36 @@ public class SequenceLibrary {
                 .where(COLLECTION_ITEM.ID.equal(contentId))
                 .execute();
         return result > 0;
+    }
+    
+
+    static class JooqSource implements SequenceFolderList.Source, RecordMapper<FolderRecord, SequenceFolder> {
+        private final Factory create;
+
+        public JooqSource(Factory factory) {
+            this.create = factory;
+        }
+        
+        @Override
+        public List<SequenceFolder> findChildFolders(Long parentId) {
+            Condition parentFolderCondition = parentId == null ? FOLDER.PARENT_ID.isNull()
+                : FOLDER.PARENT_ID.eq(parentId);
+            Result<FolderRecord> result = create.selectFrom(Tables.FOLDER)
+                    .where(parentFolderCondition)
+                    .fetch();
+            
+            return result.map(this);
+        }
+
+        @Override
+        public final SequenceFolder map(FolderRecord record) {
+            CollectionType type = CollectionType.fromRecordValue(record.getType());
+            return type.createSequenceCollection(record);
+        }
+
+        public String getNewFolderName(CollectionType type) {
+            return "New " + type.name(); // TODO
+        }
     }
 }
 
