@@ -36,7 +36,11 @@ abstract public class PersistentListModel<E> extends AbstractListModel {
         return elements.get(index);
     }
 
-    public E getElement(long id) {
+    List<E> getElements() {
+        return elements;
+    }
+    
+    public E findElement(long id) {
         return elementMap.get(id);
     }
 
@@ -133,11 +137,11 @@ abstract public class PersistentListModel<E> extends AbstractListModel {
         
         List<E> newElements = retrieve();
         
-        for (int index: getIndicesForNotContaining(elements, getIdSet(newElements))) {
+        for (int index: getIndicesForNotContaining(elements, getIdSet(newElements), true)) {
             removeFromInternalList(index);
         }
         
-        List<int[]> ranges = toRangeList(getIndicesForNotContaining(newElements, getElementIdSet()));
+        List<int[]> ranges = toRangeList(getIndicesForNotContaining(newElements, getElementIdSet(), false));
         int lastInsertEnd = 0;
         
         for (int[] insertRange: ranges) {
@@ -187,21 +191,27 @@ abstract public class PersistentListModel<E> extends AbstractListModel {
         return ranges;
     }
 
-    private static List<Integer> getIndicesForNotContaining(Iterator<Long> it, Set<Long> idSet) {
-        List<Integer> indices = new LinkedList<Integer>();
+    private static List<Integer> getIndicesForNotContaining(Iterator<Long> it, Set<Long> idSet, boolean desc) {
+        LinkedList<Integer> indices = new LinkedList<Integer>();
         
         for (int index = 0; it.hasNext(); index++) {
             Long key = it.next();
-            if (!idSet.contains(key)) {
-                indices.add(index);
+            if (idSet.contains(key)) {
+                continue;
+            }
+            if (desc) {
+                indices.addFirst(index);
+            }
+            else {
+                indices.addLast(index);
             }
         }
         return indices;
     }
     
-    private List<Integer> getIndicesForNotContaining(Iterable<? extends E> collection, Set<Long> idSet) {
+    private List<Integer> getIndicesForNotContaining(Iterable<? extends E> collection, Set<Long> idSet, boolean desc) {
         ElementIdIterator ite = new ElementIdIterator(collection.iterator());
-        return getIndicesForNotContaining(ite, idSet);
+        return getIndicesForNotContaining(ite, idSet, desc);
     }
     
     private Set<Long> getIdSet(Collection<E> elements) {
