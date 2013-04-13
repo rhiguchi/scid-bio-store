@@ -1,49 +1,21 @@
 package jp.scid.bio.store.base;
 
-import org.jooq.AttachableInternal;
-import org.jooq.Configuration;
 import org.jooq.Field;
 import org.jooq.Record;
-import org.jooq.impl.Factory;
 
-public abstract class RecordModel<R extends Record> {
-    protected final R record;
+public interface RecordModel<R extends Record> {
 
-    public RecordModel() {
-        this(null);
-    }
+    Long id();
     
-    public RecordModel(R record) {
-        this.record = record == null ? createRecord() : record;
-    }
+    boolean delete();
     
-    Factory getFactory() {
-        return (Factory) ((AttachableInternal) record).getConfiguration();
-    }
+    boolean save();
     
-    abstract protected R createRecord();
-
-    abstract public Long id();
+    boolean changed();
     
-    abstract protected void setId(Long id);
+    R getRecord();
     
-    abstract protected boolean delete();
+    <T> T getValue(Field<T> field) throws IllegalArgumentException;
     
-    abstract protected boolean save();
-    
-    public void attach(Configuration configuration) {
-        record.attach(configuration);
-    }
-    
-    public <T> T getValue(Field<T> field) throws IllegalArgumentException {
-        return record.getValue(field);
-    }
-
-    public <T> void setValue(Field<T> field, T value) {
-        record.setValue(field, value);
-    }
-
-    public boolean changed() {
-        return record.changed();
-    }
+    <T> void setValue(Field<T> field, T value);
 }

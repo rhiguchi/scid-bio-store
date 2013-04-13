@@ -1,12 +1,14 @@
 package jp.scid.bio.store.sequence;
 
+import jp.scid.bio.store.base.AbstractRecordListModel;
 import jp.scid.bio.store.base.RecordListModel;
 
-public abstract class SequenceCollection<E extends GeneticSequence> extends RecordListModel<E> {
-    SequenceCollection() {
-    }
+public interface SequenceCollection<E extends GeneticSequence> extends RecordListModel<E> {
     
-    public static SequenceCollection<FolderContentGeneticSequence> newBasicFolderContents() {
-        return null; //TODO
+}
+
+abstract class AbstractSequenceCollection<E extends GeneticSequence> extends AbstractRecordListModel<E>
+        implements SequenceCollection<E> {
+    AbstractSequenceCollection() {
     }
 }

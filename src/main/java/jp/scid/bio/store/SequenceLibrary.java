@@ -7,6 +7,7 @@ import java.util.List;
 import jp.scid.bio.store.folder.CollectionType;
 import jp.scid.bio.store.folder.FolderList;
 import jp.scid.bio.store.folder.Folder;
+import jp.scid.bio.store.folder.FolderLists;
 import jp.scid.bio.store.jooq.Tables;
 import jp.scid.bio.store.jooq.tables.records.CollectionItemRecord;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
@@ -38,7 +39,7 @@ public class SequenceLibrary {
         
         allSequences = LibrarySequenceCollection.fromFactory(factory, parser);
         
-        rootFolderList = FolderList.createRootFolderList(folderListSource);
+        rootFolderList = FolderLists.createRootFolderList(folderListSource);
     }
     
     

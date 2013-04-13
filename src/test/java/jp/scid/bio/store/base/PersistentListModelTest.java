@@ -129,19 +129,14 @@ public class PersistentListModelTest {
     
     @Test
     public void add() {
-        model = spy(model);
-        
         model.add(e1);
         assertEquals(e1, model.getElementAt(0));
-        verify(model).insertIntoStore(e1);
         
         model.add(e2);
         assertEquals(e2, model.getElementAt(1));
-        verify(model).insertIntoStore(e2);
         
         model.add(0, e3);
         assertEquals(e3, model.getElementAt(0));
-        verify(model).insertIntoStore(e3);
     }
     
     @Test
@@ -165,18 +160,15 @@ public class PersistentListModelTest {
     
     @Test
     public void remove() {
-        model = spy(model);
         setElements(e1, e2, e3);
         
         model.remove(0);
         assertEquals(e2, model.getElementAt(0));
         assertEquals(e3, model.getElementAt(1));
-        verify(model).deleteFromStore(e1);
         
         model.remove(1);
         assertEquals(e2, model.getElementAt(0));
         assertEquals(1, model.getSize());
-        verify(model).deleteFromStore(e3);
     }
     
     @Test
@@ -237,21 +229,6 @@ public class PersistentListModelTest {
         @Override
         protected List<TestElement> retrieve() {
             return source;
-        }
-
-        @Override
-        protected boolean deleteFromStore(TestElement element) {
-            return source.remove(element);
-        }
-
-        @Override
-        protected boolean insertIntoStore(TestElement element) {
-            return source.add(element);
-        }
-
-        @Override
-        protected boolean update(TestElement element) {
-            return true;
         }
     }
 

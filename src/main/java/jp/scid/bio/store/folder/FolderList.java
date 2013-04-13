@@ -2,23 +2,32 @@ package jp.scid.bio.store.folder;
 
 import java.util.List;
 
+import jp.scid.bio.store.base.AbstractRecordListModel;
 import jp.scid.bio.store.base.RecordListModel;
 
-public class FolderList extends RecordListModel<Folder> {
+public interface FolderList extends RecordListModel<Folder> {
+    long folderId();
+    
+    public static interface Source {
+        List<Folder> findChildFolders(Long parentFolderId);
+
+        String getNewFolderName(CollectionType type);
+        
+        boolean isDescend(Long folderId, Long folderId2);
+    }
+}
+
+class FolderListImpl extends AbstractRecordListModel<Folder> implements FolderList {
     private final Long folderId;
     private final Source source;
     
-    FolderList(Source source, Long folderId) {
+    FolderListImpl(Source source, Long folderId) {
         this.source = source;
         this.folderId = folderId;
     }
     
-    public static FolderList createRootFolderList(Source source) {
-        return new FolderList(source, null);
-    }
-    
     public Folder add(CollectionType type) {
-        Folder folder = Folder.newFolderOf(type);
+        Folder folder = AbstractFolder.newFolderOf(type);
         folder.setName(source.getNewFolderName(type));
         add(folder);
         return folder;
@@ -35,22 +44,19 @@ public class FolderList extends RecordListModel<Folder> {
     }
 
     public void moveChildFrom(FolderList list, int index) {
-        if (source.isDescend(list.folderId, folderId)) {
+        if (source.isDescend(list.folderId(), folderId)) {
             throw new IllegalArgumentException("cannot move");
         }
         
-        Folder folder = list.removeFromInternalList(index);
+        Folder folder = list.remove(index);
         folder.setParentId(folderId);
-        insertIntoStore(folder);
+        add(folder);
         
         folder.save();
     }
 
-    public static interface Source {
-        List<Folder> findChildFolders(Long parentFolderId);
-
-        String getNewFolderName(CollectionType type);
-        
-        boolean isDescend(Long folderId, Long folderId2);
+    @Override
+    public long folderId() {
+        return folderId;
     }
 }

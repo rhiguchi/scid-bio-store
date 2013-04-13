@@ -10,7 +10,7 @@ import org.jooq.RecordMapper;
 import org.jooq.Result;
 import org.jooq.impl.Factory;
 
-public class LibrarySequenceCollection extends MutableSequenceCollection<GeneticSequence> {
+public class LibrarySequenceCollection extends AbstractMutableSequenceCollection<GeneticSequence> {
     private final Source source;
     
     LibrarySequenceCollection(Source source) {
@@ -39,7 +39,7 @@ public class LibrarySequenceCollection extends MutableSequenceCollection<Genetic
         List<GeneticSequence> retrieveAllSequences();
     }
     
-    private static class JooqSource extends MutableSequenceCollection.JooqSource
+    private static class JooqSource extends AbstractMutableSequenceCollection.JooqSource
             implements Source, RecordMapper<GeneticSequenceRecord, GeneticSequence> {
         private final Factory create;
 
@@ -56,7 +56,7 @@ public class LibrarySequenceCollection extends MutableSequenceCollection<Genetic
         
         @Override
         public GeneticSequence map(GeneticSequenceRecord record) {
-            return new GeneticSequence(record);
+            return new GeneticSequenceImpl(record);
         }
     }
 }

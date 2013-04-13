@@ -5,26 +5,30 @@ import java.io.IOException;
 
 import jp.scid.bio.store.GeneticSequenceParser;
 
-public abstract class MutableSequenceCollection<E extends GeneticSequence> extends SequenceCollection<E>  {
+public interface MutableSequenceCollection<E extends GeneticSequence> extends SequenceCollection<E>  {
+
+    public static interface Source {
+        void loadSequenceFileInto(GeneticSequence sequence, File file) throws IOException;
+    }
+}
+
+abstract class AbstractMutableSequenceCollection<E extends GeneticSequence>
+        extends AbstractSequenceCollection<E> implements MutableSequenceCollection<E> {
     private final Source source;
     
-    MutableSequenceCollection(Source source) {
+    AbstractMutableSequenceCollection(Source source) {
         if (source == null) throw new IllegalArgumentException("source must not be null");
         this.source = source;
     }
 
     public GeneticSequence addElementFromFile(File file) throws IOException {
-        GeneticSequence sequence = new GeneticSequence();
+        GeneticSequence sequence = new GeneticSequenceImpl();
         source.loadSequenceFileInto(sequence, file);
         addSequence(sequence);
         return sequence;
     }
     
     abstract void addSequence(GeneticSequence newRecord);
-    
-    public static interface Source {
-        void loadSequenceFileInto(GeneticSequence sequence, File file) throws IOException;
-    }
     
     static class JooqSource implements Source {
         private GeneticSequenceParser parser = null;

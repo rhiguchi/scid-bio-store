@@ -8,9 +8,13 @@ import jp.scid.bio.store.sequence.SequenceCollection;
  * @author higuchi
  *
  */
-public class SequenceGroupFolder extends Folder {
+public interface GroupFolder extends Folder {
+    SequenceCollection getContentSequences();
+}
 
-    public SequenceGroupFolder(FolderRecord record) {
+class GroupFolderImpl extends AbstractFolder implements GroupFolder {
+
+    public GroupFolderImpl(FolderRecord record) {
         super(record);
         
         if (CollectionType.fromRecordValue(record.getType()) != CollectionType.NODE) {

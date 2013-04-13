@@ -1,7 +1,9 @@
 package jp.scid.bio.store.folder;
 
+import jp.scid.bio.store.base.AbstractRecordModel;
 import jp.scid.bio.store.base.RecordModel;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
+import jp.scid.bio.store.sequence.BasicSequenceCollection;
 import jp.scid.bio.store.sequence.FolderContentGeneticSequence;
 import jp.scid.bio.store.sequence.SequenceCollection;
 
@@ -10,9 +12,17 @@ import jp.scid.bio.store.sequence.SequenceCollection;
  * @author higuchi
  *
  */
-public abstract class Folder extends RecordModel<FolderRecord> {
+public interface Folder extends RecordModel<FolderRecord> {
+    Long parentId();
     
-    Folder(FolderRecord record) {
+    void setParentId(Long newParentId);
+    
+    void setName(String newName);
+}
+
+abstract class AbstractFolder extends AbstractRecordModel<FolderRecord> implements Folder {
+    
+    AbstractFolder(FolderRecord record) {
         super(record);
     }
     
@@ -75,12 +85,12 @@ public abstract class Folder extends RecordModel<FolderRecord> {
     }
 }
 
-class BasicSequenceFolder extends Folder {
+class BasicSequenceFolder extends AbstractFolder {
     private final SequenceCollection<FolderContentGeneticSequence> contents;
     
     public BasicSequenceFolder(FolderRecord record) {
         super(record);
-        contents = SequenceCollection.newBasicFolderContents();
+        contents = BasicSequenceCollection.fromFactory(null, record.getId());
     }
     
     @Override
@@ -90,7 +100,7 @@ class BasicSequenceFolder extends Folder {
     }
 }
 
-class FilterSequenceCollection extends Folder {
+class FilterSequenceCollection extends AbstractFolder {
     public FilterSequenceCollection(FolderRecord record) {
         super(record);
     }

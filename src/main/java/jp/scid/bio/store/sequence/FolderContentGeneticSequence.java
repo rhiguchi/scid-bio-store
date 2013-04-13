@@ -3,10 +3,16 @@ package jp.scid.bio.store.sequence;
 import jp.scid.bio.store.jooq.tables.records.CollectionItemRecord;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
 
-public class FolderContentGeneticSequence extends GeneticSequence {
+public interface FolderContentGeneticSequence extends GeneticSequence {
+    Long folderId();
+    
+    Long sequenceId();
+}
+
+class FolderContentGeneticSequenceImpl extends GeneticSequenceImpl implements FolderContentGeneticSequence {
     private final CollectionItemRecord itemRecord;
 
-    FolderContentGeneticSequence(GeneticSequenceRecord record,
+    FolderContentGeneticSequenceImpl(GeneticSequenceRecord record,
             CollectionItemRecord itemRecord) {
         super(record);
         this.itemRecord = itemRecord;

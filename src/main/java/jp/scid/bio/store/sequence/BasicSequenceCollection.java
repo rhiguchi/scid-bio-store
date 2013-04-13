@@ -15,7 +15,7 @@ import org.jooq.RecordMapper;
 import org.jooq.Result;
 import org.jooq.impl.Factory;
 
-public class BasicSequenceCollection extends MutableSequenceCollection<FolderContentGeneticSequence> {
+public class BasicSequenceCollection extends AbstractMutableSequenceCollection<FolderContentGeneticSequence> {
     final static Field<Long> LAST_MODIFICATION = fieldByName(Long.class, "last_modification");
     final static Field<String> TABLE_NAME = fieldByName(String.class, "table_name");
     
@@ -29,7 +29,9 @@ public class BasicSequenceCollection extends MutableSequenceCollection<FolderCon
         this.folderId = folderId;
     }
     
-    
+    public static BasicSequenceCollection fromFactory(Factory factory, long folderId) {
+        return null; // TODO
+    }
     
     @Override
     protected List<FolderContentGeneticSequence> retrieve() {
@@ -50,7 +52,8 @@ public class BasicSequenceCollection extends MutableSequenceCollection<FolderCon
         FolderContentGeneticSequence addFolderContent(long folderId, GeneticSequence sequence);
     }
     
-    static class DefaultSource extends MutableSequenceCollection.JooqSource implements Source, RecordMapper<Record, FolderContentGeneticSequence> {
+    static class DefaultSource extends AbstractMutableSequenceCollection.JooqSource
+            implements Source, RecordMapper<Record, FolderContentGeneticSequence> {
         private final Factory create;
         
         public DefaultSource(Factory factory) {
@@ -76,7 +79,7 @@ public class BasicSequenceCollection extends MutableSequenceCollection<FolderCon
         public FolderContentGeneticSequence map(Record record) {
             GeneticSequenceRecord seq = record.into(Tables.GENETIC_SEQUENCE);
             CollectionItemRecord item = record.into(Tables.COLLECTION_ITEM);
-            return new FolderContentGeneticSequence(seq, item);
+            return new FolderContentGeneticSequenceImpl(seq, item);
         }
         
         @Override
@@ -92,7 +95,7 @@ public class BasicSequenceCollection extends MutableSequenceCollection<FolderCon
             item.setGeneticSequenceId(record);
             item.store();
             
-            return new FolderContentGeneticSequence(record, item);
+            return new FolderContentGeneticSequenceImpl(record, item);
         }
     }
 }

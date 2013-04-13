@@ -44,27 +44,28 @@ abstract public class PersistentListModel<E> extends AbstractListModel {
         return elementMap.get(id);
     }
 
-    protected void add(int index, E element) {
+    public void add(int index, E element) {
         addToInternalList(index, element);
-        insertIntoStore(element);
+        afterAdd(element);
     }
     
-    protected void add(E element) {
+    public void add(E element) {
         add(getSize(), element);
     }
 
     protected void updated(int index) {
         E e = getElementAt(index);
-        update(e);
+        afterAdd(e);
         setElementToInternalList(index, e);
     }
     
-    protected E remove(int index) {
+    public E remove(int index) {
         E element = removeFromInternalList(index);
-        deleteFromStore(element);
+        afterDelete(element);
         return element;
     }
     
+
     // internal list handling
     protected void addAllToInternalList(int index, Collection<? extends E> newElements) {
         if (newElements.isEmpty()) {
@@ -230,12 +231,22 @@ abstract public class PersistentListModel<E> extends AbstractListModel {
     protected abstract Long getId(E element);
     
     protected abstract List<E> retrieve();
-    
-    abstract protected boolean deleteFromStore(E element);
-    
-    abstract protected boolean insertIntoStore(E element);
-    
-    abstract protected boolean update(E element);
+
+    /**
+     * 
+     * @param element
+     */
+    protected void afterAdd(E element) {
+        // overwrite
+    }
+
+    /**
+     * 
+     * @param element
+     */
+    protected void afterDelete(E element) {
+        // overwrite
+    }
     
     // modification
     public final boolean checkModification() {

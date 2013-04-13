@@ -10,7 +10,7 @@ public enum CollectionType {
         @Override
         public Folder createFolder(FolderRecord record) {
             record.setType(getDbValue());
-            return new SequenceGroupFolder(record);
+            return new GroupFolderImpl(record);
         }
     },
     BASIC() {
