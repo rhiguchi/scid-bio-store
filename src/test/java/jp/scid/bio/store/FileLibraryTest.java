@@ -44,7 +44,7 @@ public class FileLibraryTest {
     @Before
     public void setUp() throws Exception {
         create = new H2Factory(connectionPool.getConnection());
-        create.insertInto(Tables.GENETIC_SEQUENCE).set(GENETIC_SEQUENCE.ID, null).execute();
+        create.insertInto(Tables.GENETIC_SEQUENCE).set(GENETIC_SEQUENCE.ID, (Long) null).execute();
         
         library = new FileLibrary(create);
     }
