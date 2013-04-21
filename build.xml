@@ -12,9 +12,9 @@
             SciendeDesign Bio library
     </description>
 
-    <property name="module.version.target" value="0.1" />
+    <property name="module.version.target" value="0.2" />
     
-    <property file="project/build.properties"/>
+    <property file="build.properties"/>
     <property file="project/build.default.properties"/>
 
     <!-- Classpath -->
@@ -106,80 +106,124 @@
          ================================= -->
     <target name="clean" description="clean the project">
         <delete includeemptydirs="true" dir="${build.dir}"/>
+        <delete includeemptydirs="true" dir="${dist.dir}"/>
     </target>
 
+    <target name="clean-lib" description="clean lib dir">
+        <delete dir="${lib.dir}"/>
+    </target>
+    
     <!-- ================================= 
           target: Resolve dependency              
          ================================= -->
-    <target name="resolve" description="resolve dependencies with ivy">
-        <ivy:resolve />
-
-        <!-- Class Paths -->
-        <ivy:cachepath pathid="lib.compile.classpath" conf="compile" />
-        <ivy:cachepath pathid="lib.test.classpath" conf="test" />
+    <target name="retrieve" description="retrieve dependencies with ivy">
+        <ivy:retrieve symlink="true" />
     </target>
 
     <!-- ================================= 
           target: compile              
          ================================= -->
-    <target name="compile" depends="init, resolve" description="compile the project">
+    <target name="compile" depends="init" description="compile the project">
         <mkdir dir="${classes.main.dir}"/>
 
         <copy todir="${classes.main.dir}">
             <fileset dir="${src.main.java.dir}" excludes="**/*.java" />
             <fileset dir="${src.main.resources.dir}"/>
         </copy>
+
+        <path id="lib.compile.path">
+            <fileset dir="${lib.compile.dir}" includes="**/*.jar" />
+        </path>
         
         <javac destdir="${classes.main.dir}" source="1.6" target="1.6"
                 encoding="UTF-8" debug="true" includeantruntime="false">
             <compilerarg value="-Xlint:all"/>
             <src path="${src.main.java.dir}" />
-            <classpath refid="lib.compile.classpath" />
+            
+            <classpath refid="lib.compile.path" />
         </javac>
     </target>
 
     <!-- ================================= 
           target: create jar file              
          ================================= -->
-    <target name="package" depends="version, compile" description="make a jar file for this project">
+    <target name="jar" depends="compile" description="make a jar file for this project">
         <jar destfile="${package.file}">
             <fileset dir="${classes.main.dir}" />
-            <fileset dir="${src.main.resources.dir}" />
             <manifest>
                 <attribute name="Built-By" value="${user.name}" />
-                <attribute name="Build-Version" value="${version}" />
+                <attribute name="Build-Version" value="${module.version.target}" />
             </manifest>
         </jar>
     </target>
 
     <!-- ================================= 
+          target: package-sources
+         ================================= -->
+    <target name="jar-sources" depends="init" description="description">
+        <zip destfile="${source.file}">
+            <fileset dir="${src.main.java.dir}" includes="**/*.java" />
+        </zip>
+    </target>
+
+    <!-- ================================= 
+          target: create Javadoc              
+         ================================= -->
+    <target name="javadoc" depends="compile" description="Create Javadoc">
+        <javadoc destdir="${javadoc.dir}" encoding="UTF-8" source="1.6" author="true" version="true"
+                access="${javadoc.access}" docencoding="UTF-8" charset="UTF-8" doctitle="${javadoc.title}">
+            <arg value="-J-Dfile.encoding=UTF-8"/>
+            <classpath refid="lib.compile.path" />
+            <sourcepath path="${src.main.java.dir}"/>
+            <link href="${javadoc.api-ref.javase}"/>
+        </javadoc>
+    </target>
+    
+    <!-- ================================= 
+          target: package-javadoc
+         ================================= -->
+    <target name="jar-javadoc" depends="javadoc" description="description">
+        <jar basedir="${javadoc.dir}" destfile="${javadoc.file}"/>
+    </target>
+
+    <!-- ================================= 
           target: Compile for test              
          ================================= -->
-    <target name="test-compile" depends="compile" description="description">
+    <target name="test-compile" depends="" description="description">
         <mkdir dir="${classes.test.dir}"/>
 
         <copy todir="${classes.test.dir}">
             <fileset dir="${src.test.java.dir}" excludes="**/*.java" />
             <fileset dir="${src.test.resources.dir}"/>
         </copy>
+
+        <path id="lib.test.path">
+            <fileset dir="${lib.test.dir}" includes="**/*.jar" />
+            <pathelement path="${package.file}"/>
+        </path>
         
         <javac destdir="${classes.test.dir}" source="1.6" target="1.6"
                 encoding="UTF-8" debug="true" includeantruntime="false">
             <src path="${src.test.java.dir}" />
-            <classpath path="${classes.main.dir}" />
-            <classpath refid="lib.test.classpath" />
+            
+            <classpath refid="lib.test.path" />
         </javac>
     </target>
 
     <!-- ================================= 
           target: test              
          ================================= -->
-    <target name="test" depends="test-compile, package" description="Run all tests">
+    <target name="test" depends="test-compile" description="Run all tests">
         <mkdir dir="${test.report.dir}"/>
+
+        <path id="run.test.classpath">
+            <pathelement location="${classes.test.dir}" />
+            <pathelement location="${src.test.resources.dir}" />
+            <path refid="lib.test.path"/>
+        </path>
+            
         <junit printsummary="yes" >
-            <classpath refid="lib.test.classpath" />
             <classpath refid="run.test.classpath" />
-            <classpath path="${package.file}" />
 
             <batchtest todir="${test.report.dir}">
                 <formatter type="xml" usefile="true"/>
@@ -188,12 +232,23 @@
         </junit>
     </target>
 
+
+    <target name="dist" depends="">
+        <property name="version" value="${module.version.target}" />
+        <ivy:info/>
+        <ivy:deliver delivertarget="default" pubrevision="0.2"/>
+        <copy file="${package.file}" tofile="${ivy.distrib.dir}/jars/${ant.project.name}-${version}.jar" />
+        <copy file="${source.file}" tofile="${ivy.distrib.dir}/sources/${ant.project.name}-${version}.jar" />
+        <copy file="${javadoc.file}" tofile="${ivy.distrib.dir}/javadocs/${ant.project.name}-${version}.jar" />
+    </target>
+    
     <!-- ================================= 
            target: publish-local
           ================================= -->
-    <target name="publish-local" depends="clean, local-version, package"
+    <target name="publish-local" depends="local-version, dist"
             description="publish this project in the local ivy repository">
-        <ivy:publish artifactspattern="${build.dir}/[artifact].[ext]"
+        <ivy:info/>
+        <ivy:publish
             resolver="local"
             pubrevision="${version}"
             pubdate="${now}"
@@ -214,7 +269,7 @@
     <!-- ================================= 
           target: publish              
          ================================= -->
-    <target name="publish" depends="clean, package, test" description="publish this project in the ivy repository">
+    <target name="publish" depends="clean, jar, test" description="publish this project in the ivy repository">
         <ivy:publish
             artifactspattern="${build.dir}/[artifact].[ext]"
             resolver="shared"
@@ -238,7 +293,7 @@
         <tstamp>
             <format property="now" pattern="yyyyMMddHHmmss" />
         </tstamp>
-        <property name="ivy.new.revision" value="${module.version.target}-local-${now}" />
+        <property name="version" value="${module.version.target}-local-${now}" />
     </target>
 
     <target name="version" depends="ivy-new-version">
