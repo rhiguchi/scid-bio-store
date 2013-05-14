@@ -11,27 +11,30 @@ import org.jooq.Result;
 import org.jooq.impl.Factory;
 
 public class LibrarySequenceCollection extends AbstractMutableSequenceCollection<GeneticSequence> {
-    private final Source source;
+    private final Factory create;
+    private final Mapper mapper;
     
-    LibrarySequenceCollection(Source source) {
-        super(source);
-        
-        this.source = source;
+    private LibrarySequenceCollection(Factory create) {
+        this.create = create;
+        mapper = new Mapper();
     }
     
     public static LibrarySequenceCollection fromFactory(Factory create, GeneticSequenceParser parser) {
-        JooqSource source = new JooqSource(create);
-        source.setParser(parser);
-        return new LibrarySequenceCollection(source);
+        LibrarySequenceCollection collection = new LibrarySequenceCollection(create);
+        collection.setParser(parser);
+        return collection;
     }
 
     @Override
     protected List<GeneticSequence> retrieve() {
-        return source.retrieveAllSequences();
+        Result<GeneticSequenceRecord> result = create.selectFrom(Tables.GENETIC_SEQUENCE)
+                .orderBy(Tables.GENETIC_SEQUENCE.ID)
+                .fetch();
+        return result.map(mapper);
     }
 
     @Override
-    void addSequence(GeneticSequence newRecord) {
+    void addSequence(DefaultGeneticSequence newRecord) {
         add(newRecord);
     }
     
@@ -39,24 +42,10 @@ public class LibrarySequenceCollection extends AbstractMutableSequenceCollection
         List<GeneticSequence> retrieveAllSequences();
     }
     
-    private static class JooqSource extends AbstractMutableSequenceCollection.JooqSource
-            implements Source, RecordMapper<GeneticSequenceRecord, GeneticSequence> {
-        private final Factory create;
-
-        public JooqSource(Factory create) {
-            super();
-            this.create = create;
-        }
-        
-        public List<GeneticSequence> retrieveAllSequences() {
-            Result<GeneticSequenceRecord> result = create.selectFrom(Tables.GENETIC_SEQUENCE)
-                    .fetch();
-            return result.map(this);
-        }
-        
+    private static class Mapper implements RecordMapper<GeneticSequenceRecord, GeneticSequence> {
         @Override
         public GeneticSequence map(GeneticSequenceRecord record) {
-            return new GeneticSequenceImpl(record);
+            return new DefaultGeneticSequence(record);
         }
     }
 }

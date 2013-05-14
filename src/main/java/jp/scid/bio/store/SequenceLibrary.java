@@ -28,17 +28,14 @@ public class SequenceLibrary {
     
     private final GeneticSequenceParser parser;
     
-    private final JooqSource folderListSource;
-    
     SequenceLibrary(Factory factory) {
         this.create = factory;
         
         parser = new GeneticSequenceParser();
         
-        folderListSource = new JooqSource(factory);
-        
         allSequences = LibrarySequenceCollection.fromFactory(factory, parser);
         
+        JooqSource folderListSource = new JooqSource(factory);
         rootFolderList = FolderLists.createRootFolderList(folderListSource);
     }
     
@@ -48,7 +45,6 @@ public class SequenceLibrary {
     }
     
     public LibrarySequenceCollection getAllSequences() {
-        allSequences.fetch();
         return allSequences;
     }
     

@@ -7,6 +7,12 @@ import jp.scid.bio.store.GeneticSequenceParser;
 
 public interface MutableSequenceCollection<E extends GeneticSequence> extends SequenceCollection<E>  {
 
+    E remove(int index);
+    
+    void add(E element);
+    
+    void add(int index, E element);
+    
     public static interface Source {
         void loadSequenceFileInto(GeneticSequence sequence, File file) throws IOException;
     }
@@ -14,39 +20,40 @@ public interface MutableSequenceCollection<E extends GeneticSequence> extends Se
 
 abstract class AbstractMutableSequenceCollection<E extends GeneticSequence>
         extends AbstractSequenceCollection<E> implements MutableSequenceCollection<E> {
-    private final Source source;
+    private GeneticSequenceParser parser = null;
     
-    AbstractMutableSequenceCollection(Source source) {
-        if (source == null) throw new IllegalArgumentException("source must not be null");
-        this.source = source;
+    protected AbstractMutableSequenceCollection() {
     }
 
+    public boolean canAdd(File file) {
+        if (parser == null) {
+            return false;
+        }
+        return true;    
+    }
+    
     public GeneticSequence addElementFromFile(File file) throws IOException {
-        GeneticSequence sequence = new GeneticSequenceImpl();
-        source.loadSequenceFileInto(sequence, file);
+        DefaultGeneticSequence sequence = new DefaultGeneticSequence();
+        loadSequence(file, sequence);
         addSequence(sequence);
         return sequence;
     }
+
+    private void loadSequence(File file, DefaultGeneticSequence sequence) throws IOException {
+        if (parser == null) {
+            throw new IllegalStateException("cannot import file because parser doesn't exist");
+        }
+        sequence.loadFrom(file, parser);
+        sequence.save();
+    }
     
-    abstract void addSequence(GeneticSequence newRecord);
+    abstract void addSequence(DefaultGeneticSequence newRecord);
     
-    static class JooqSource implements Source {
-        private GeneticSequenceParser parser = null;
-        
-        GeneticSequenceParser parser() {
-            if (parser == null) throw new IllegalStateException("parser must not be null");
-            
-            return parser;
-        }
-        
-        public void setParser(GeneticSequenceParser parser) {
-            this.parser = parser;
-        }
-        
-        @Override
-        public void loadSequenceFileInto(GeneticSequence sequence, File file) throws IOException {
-            sequence.loadFrom(file, parser());
-            sequence.save();
-        }
+    public GeneticSequenceParser getParser() {
+        return parser;
+    }
+    
+    public void setParser(GeneticSequenceParser parser) {
+        this.parser = parser;
     }
 }

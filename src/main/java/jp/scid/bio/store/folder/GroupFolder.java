@@ -1,6 +1,8 @@
 package jp.scid.bio.store.folder;
 
+import jp.scid.bio.store.base.RecordListModel;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
+import jp.scid.bio.store.sequence.FolderContentGeneticSequence;
 import jp.scid.bio.store.sequence.SequenceCollection;
 
 /**
@@ -9,7 +11,7 @@ import jp.scid.bio.store.sequence.SequenceCollection;
  *
  */
 public interface GroupFolder extends Folder {
-    SequenceCollection getContentSequences();
+    RecordListModel<Folder> getChildFolders();
 }
 
 class GroupFolderImpl extends AbstractFolder implements GroupFolder {
@@ -22,15 +24,22 @@ class GroupFolderImpl extends AbstractFolder implements GroupFolder {
         }
     }
 
+    @Override
+    public SequenceCollection<FolderContentGeneticSequence> getContentSequences() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public RecordListModel<Folder> getChildFolders() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 //    public SequenceFolderList getChildren() {
 //        DefaultSequenceFolderList children = new DefaultSequenceFolderList(getFactory(), id());
 //        children.fetch();
 //        return children;
 //    }
-
-    @Override
-    public SequenceCollection getContentSequences() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+    
 }

@@ -2,6 +2,7 @@ package jp.scid.bio.store.base;
 
 import static java.lang.String.*;
 
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -20,10 +21,15 @@ abstract public class PersistentListModel<E> extends AbstractListModel {
     private final List<E> elements;
     private long modificationValue = Long.MIN_VALUE;
     
+    @SuppressWarnings("unused")
+    private final PropertyChangeSupport pcs;
+    
     public PersistentListModel() {
         elements = new ArrayList<E>();
         
         elementMap = new HashMap<Long, E>();
+        
+        pcs = new PropertyChangeSupport(this);
     }
 
     @Override

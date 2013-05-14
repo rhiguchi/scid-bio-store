@@ -16,7 +16,7 @@ public enum CollectionType {
     BASIC() {
         @Override
         public Folder createFolder(FolderRecord record) {
-            return new BasicSequenceFolder(record);
+            return new JooqBasicSequenceFolder(record);
         }
     },
     FILTER() {

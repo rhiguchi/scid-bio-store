@@ -1,5 +1,7 @@
 package jp.scid.bio.store.base;
 
+import java.beans.PropertyChangeSupport;
+
 import org.jooq.AttachableInternal;
 import org.jooq.Configuration;
 import org.jooq.Field;
@@ -8,6 +10,7 @@ import org.jooq.impl.Factory;
 
 public abstract class AbstractRecordModel<R extends Record> implements RecordModel<R> {
     protected final R record;
+    private final PropertyChangeSupport pcs;
 
     public AbstractRecordModel() {
         this(null);
@@ -15,6 +18,8 @@ public abstract class AbstractRecordModel<R extends Record> implements RecordMod
     
     public AbstractRecordModel(R record) {
         this.record = record == null ? createRecord() : record;
+        
+        pcs = new PropertyChangeSupport(this);
     }
     
     Factory getFactory() {

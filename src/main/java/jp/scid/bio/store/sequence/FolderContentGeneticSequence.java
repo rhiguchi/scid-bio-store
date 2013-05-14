@@ -9,7 +9,7 @@ public interface FolderContentGeneticSequence extends GeneticSequence {
     Long sequenceId();
 }
 
-class FolderContentGeneticSequenceImpl extends GeneticSequenceImpl implements FolderContentGeneticSequence {
+class FolderContentGeneticSequenceImpl extends DefaultGeneticSequence implements FolderContentGeneticSequence {
     private final CollectionItemRecord itemRecord;
 
     FolderContentGeneticSequenceImpl(GeneticSequenceRecord record,

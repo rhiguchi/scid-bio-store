@@ -1,11 +1,13 @@
 package jp.scid.bio.store.folder;
 
+
 import jp.scid.bio.store.base.AbstractRecordModel;
 import jp.scid.bio.store.base.RecordModel;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
-import jp.scid.bio.store.sequence.BasicSequenceCollection;
 import jp.scid.bio.store.sequence.FolderContentGeneticSequence;
 import jp.scid.bio.store.sequence.SequenceCollection;
+
+import org.jooq.impl.Factory;
 
 /**
  * シーケンスデータを格納したフォルダの構造定義
@@ -18,6 +20,13 @@ public interface Folder extends RecordModel<FolderRecord> {
     void setParentId(Long newParentId);
     
     void setName(String newName);
+
+    /**
+     * このフォルダにある配列情報を返します。
+     * 
+     * @return 配列情報
+     */
+    SequenceCollection<FolderContentGeneticSequence> getContentSequences();
 }
 
 abstract class AbstractFolder extends AbstractRecordModel<FolderRecord> implements Folder {
@@ -30,13 +39,6 @@ abstract class AbstractFolder extends AbstractRecordModel<FolderRecord> implemen
         if (type == null) throw new IllegalArgumentException("type must not be null");
         return type.createFolder();
     }
-    
-    /**
-     * このフォルダにある配列情報を返します。
-     * 
-     * @return 配列情報
-     */
-    public abstract SequenceCollection<FolderContentGeneticSequence> getContentSequences();
 
     /**
      * このフォルダの id を返します。
@@ -83,20 +85,9 @@ abstract class AbstractFolder extends AbstractRecordModel<FolderRecord> implemen
     public void setName(String newName) {
         record.setName(newName);
     }
-}
-
-class BasicSequenceFolder extends AbstractFolder {
-    private final SequenceCollection<FolderContentGeneticSequence> contents;
     
-    public BasicSequenceFolder(FolderRecord record) {
-        super(record);
-        contents = BasicSequenceCollection.fromFactory(null, record.getId());
-    }
-    
-    @Override
-    public SequenceCollection<FolderContentGeneticSequence> getContentSequences() {
-        contents.fetch();
-        return contents;
+    Factory create() {
+        return (Factory) record.getConfiguration();
     }
 }
 
