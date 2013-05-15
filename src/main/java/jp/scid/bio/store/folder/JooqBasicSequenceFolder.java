@@ -6,11 +6,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 import jp.scid.bio.store.GeneticSequenceParser;
+import jp.scid.bio.store.base.AbstractRecordListModel;
 import jp.scid.bio.store.jooq.Tables;
 import jp.scid.bio.store.jooq.tables.records.CollectionItemRecord;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
-import jp.scid.bio.store.sequence.BasicSequenceCollection;
 import jp.scid.bio.store.sequence.DefaultGeneticSequence;
 import jp.scid.bio.store.sequence.FolderContentGeneticSequence;
 import jp.scid.bio.store.sequence.GeneticSequence;
@@ -21,15 +21,14 @@ import org.jooq.Record;
 import org.jooq.RecordMapper;
 import org.jooq.Result;
 
-class JooqBasicSequenceFolder extends AbstractFolder
-        implements BasicSequenceFolder, RecordMapper<Record, FolderContentGeneticSequence> {
+public class JooqBasicSequenceFolder extends AbstractFolder {
     private final BasicSequenceCollection contents;
     
     private GeneticSequenceParser parser = null;
     
     JooqBasicSequenceFolder(FolderRecord record) {
         super(record);
-        contents = new BasicSequenceCollection(this);
+        contents = new BasicSequenceCollection();
     }
     
     public JooqBasicSequenceFolder() {
@@ -39,21 +38,6 @@ class JooqBasicSequenceFolder extends AbstractFolder
     @Override
     public SequenceCollection<FolderContentGeneticSequence> getContentSequences() {
         return contents;
-    }
-
-    public List<FolderContentGeneticSequence> retrieveFolderContent() {
-        long folderId = id();
-        LinkedList<Field<?>> fields = new LinkedList<Field<?>>(Tables.GENETIC_SEQUENCE.getFields());
-        fields.addAll(0, Tables.COLLECTION_ITEM.getFields());
-        
-        Result<Record> result = create().select(fields)
-                .from(Tables.COLLECTION_ITEM)
-                .join(Tables.GENETIC_SEQUENCE)
-                .on(Tables.COLLECTION_ITEM.GENETIC_SEQUENCE_ID.eq(Tables.GENETIC_SEQUENCE.ID))
-                .where(Tables.COLLECTION_ITEM.FOLDER_ID.eq(folderId))
-                .orderBy(Tables.COLLECTION_ITEM.ID)
-                .fetch();
-        return result.map(this);
     }
 
     public FolderContentGeneticSequence addSequence(GeneticSequence sequence) {
@@ -76,7 +60,6 @@ class JooqBasicSequenceFolder extends AbstractFolder
         return parser != null;
     }
     
-    @Override
     public FolderContentGeneticSequence addSequence(File file) throws IOException {
         DefaultGeneticSequence sequence = new DefaultGeneticSequence();
         loadSequence(file, sequence);
@@ -91,13 +74,6 @@ class JooqBasicSequenceFolder extends AbstractFolder
         
         sequence.loadFrom(file, parser);
         sequence.save();
-    }
-    
-    @Override
-    public FolderContentGeneticSequence map(Record record) {
-        GeneticSequenceRecord seq = record.into(Tables.GENETIC_SEQUENCE);
-        CollectionItemRecord item = record.into(Tables.COLLECTION_ITEM);
-        return new FolderContentGeneticSequenceImpl(seq, item);
     }
     
     static class FolderContentGeneticSequenceImpl extends DefaultGeneticSequence implements FolderContentGeneticSequence {
@@ -120,6 +96,32 @@ class JooqBasicSequenceFolder extends AbstractFolder
 
         public Long sequenceId() {
             return itemRecord.getGeneticSequenceId();
+        }
+    }
+    
+    private class BasicSequenceCollection extends AbstractRecordListModel<FolderContentGeneticSequence>
+            implements SequenceCollection<FolderContentGeneticSequence>, RecordMapper<Record, FolderContentGeneticSequence> {
+        @Override
+        protected List<FolderContentGeneticSequence> retrieve() {
+            long folderId = id();
+            LinkedList<Field<?>> fields = new LinkedList<Field<?>>(Tables.GENETIC_SEQUENCE.getFields());
+            fields.addAll(0, Tables.COLLECTION_ITEM.getFields());
+            
+            Result<Record> result = create().select(fields)
+                    .from(Tables.COLLECTION_ITEM)
+                    .join(Tables.GENETIC_SEQUENCE)
+                    .on(Tables.COLLECTION_ITEM.GENETIC_SEQUENCE_ID.eq(Tables.GENETIC_SEQUENCE.ID))
+                    .where(Tables.COLLECTION_ITEM.FOLDER_ID.eq(folderId))
+                    .orderBy(Tables.COLLECTION_ITEM.ID)
+                    .fetch();
+            return result.map(this);
+        }
+
+        @Override
+        public FolderContentGeneticSequence map(Record record) {
+            GeneticSequenceRecord seq = record.into(Tables.GENETIC_SEQUENCE);
+            CollectionItemRecord item = record.into(Tables.COLLECTION_ITEM);
+            return new FolderContentGeneticSequenceImpl(seq, item);
         }
     }
 }

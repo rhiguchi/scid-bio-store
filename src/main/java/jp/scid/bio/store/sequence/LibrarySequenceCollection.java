@@ -33,7 +33,6 @@ public class LibrarySequenceCollection extends AbstractMutableSequenceCollection
         return result.map(mapper);
     }
 
-    @Override
     void addSequence(DefaultGeneticSequence newRecord) {
         add(newRecord);
     }

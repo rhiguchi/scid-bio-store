@@ -4,10 +4,10 @@ import static jp.scid.bio.store.jooq.Tables.*;
 
 import java.util.List;
 
+import jp.scid.bio.store.base.AbstractRecordListModel;
 import jp.scid.bio.store.folder.CollectionType;
 import jp.scid.bio.store.folder.FolderList;
 import jp.scid.bio.store.folder.Folder;
-import jp.scid.bio.store.folder.FolderLists;
 import jp.scid.bio.store.jooq.Tables;
 import jp.scid.bio.store.jooq.tables.records.CollectionItemRecord;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
@@ -22,7 +22,7 @@ import org.jooq.impl.Factory;
 public class SequenceLibrary {
     private final Factory create;
     
-    private final FolderList rootFolderList;
+    private final RootFolderList rootFolderList;
     
     private final LibrarySequenceCollection allSequences;
     
@@ -35,8 +35,7 @@ public class SequenceLibrary {
         
         allSequences = LibrarySequenceCollection.fromFactory(factory, parser);
         
-        JooqSource folderListSource = new JooqSource(factory);
-        rootFolderList = FolderLists.createRootFolderList(folderListSource);
+        rootFolderList = new RootFolderList();
     }
     
     
@@ -184,22 +183,14 @@ public class SequenceLibrary {
         return result > 0;
     }
     
-
-    static class JooqSource implements FolderList.Source, RecordMapper<FolderRecord, Folder> {
-        private final Factory create;
-
-        public JooqSource(Factory factory) {
-            this.create = factory;
-        }
-        
+    private class RootFolderList extends AbstractRecordListModel<Folder>
+            implements FolderList, RecordMapper<FolderRecord, Folder> {
         @Override
-        public List<Folder> findChildFolders(Long parentId) {
-            Condition parentFolderCondition = parentId == null ? FOLDER.PARENT_ID.isNull()
-                : FOLDER.PARENT_ID.eq(parentId);
+        protected List<Folder> retrieve() {
             Result<FolderRecord> result = create.selectFrom(Tables.FOLDER)
-                    .where(parentFolderCondition)
+                    .where(FOLDER.PARENT_ID.isNull())
                     .fetch();
-            
+
             return result.map(this);
         }
 
@@ -207,16 +198,6 @@ public class SequenceLibrary {
         public final Folder map(FolderRecord record) {
             CollectionType type = CollectionType.fromRecordValue(record.getType());
             return type.createSequenceCollection(record);
-        }
-
-        public String getNewFolderName(CollectionType type) {
-            return "New " + type.name(); // TODO
-        }
-        
-        @Override
-        public boolean isDescend(Long folderId, Long folderId2) {
-            // TODO Auto-generated method stub
-            return false;
         }
     }
 }
