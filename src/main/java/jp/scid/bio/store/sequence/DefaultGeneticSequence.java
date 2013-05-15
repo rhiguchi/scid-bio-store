@@ -34,7 +34,6 @@ public class DefaultGeneticSequence extends AbstractRecordModel<GeneticSequenceR
         return record.getId();
     }
     
-    @Override
     protected void setId(Long id) {
         record.setId(id);
     }

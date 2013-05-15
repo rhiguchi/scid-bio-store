@@ -14,11 +14,24 @@ import org.jooq.impl.Factory;
  * @author higuchi
  *
  */
-public interface Folder extends RecordModel<FolderRecord> {
+public interface Folder extends RecordModel {
+    /**
+     * 親フォルダの id を返します。
+     * @return 親フォルダの id。ルートフォルダで親がいないときは {@code null} 。
+     */
     Long parentId();
     
+    /**
+     * 親フォルダの id を設定します。
+     * @param newParentId 新しい親のフォルダ id。親のいないルートフォルダにするときは {@code null} 。
+     */
     void setParentId(Long newParentId);
     
+    /**
+     * このフォルダの名前を設定します。
+     * 
+     * @param newName 新しい名前
+     */
     void setName(String newName);
 
     /**
@@ -65,21 +78,6 @@ abstract class AbstractFolder extends AbstractRecordModel<FolderRecord> implemen
     @Override
     protected FolderRecord createRecord() {
         return new FolderRecord();
-    }
-
-    @Override
-    public boolean save() {
-        return record.store() > 0;
-    }
-    
-    @Override
-    public boolean delete() {
-        return record.delete() > 0;
-    }
-
-    @Override
-    protected void setId(Long newId) {
-        record.setId(newId);
     }
     
     public void setName(String newName) {

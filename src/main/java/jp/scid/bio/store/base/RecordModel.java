@@ -1,9 +1,8 @@
 package jp.scid.bio.store.base;
 
 import org.jooq.Field;
-import org.jooq.Record;
 
-public interface RecordModel<R extends Record> {
+public interface RecordModel {
 
     Long id();
     
@@ -12,8 +11,6 @@ public interface RecordModel<R extends Record> {
     boolean save();
     
     boolean changed();
-    
-    R getRecord();
     
     <T> T getValue(Field<T> field) throws IllegalArgumentException;
     

@@ -1,8 +1,6 @@
 package jp.scid.bio.store.folder;
 
-import java.util.List;
+import javax.swing.ListModel;
 
-import jp.scid.bio.store.base.RecordListModel;
-
-public interface FolderList extends RecordListModel<Folder> {
+public interface FolderList extends ListModel {
 }

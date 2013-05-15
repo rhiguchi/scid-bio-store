@@ -1,18 +1,15 @@
 package jp.scid.bio.store.sequence;
 
-import jp.scid.bio.store.base.AbstractRecordListModel;
-import jp.scid.bio.store.base.RecordListModel;
+import javax.swing.ListModel;
 
-public interface SequenceCollection<E extends GeneticSequence> extends RecordListModel<E> {
+import jp.scid.bio.store.base.AbstractRecordListModel;
+
+public interface SequenceCollection<E extends GeneticSequence> extends ListModel {
     @Override
     E getElementAt(int index);
     
     @Override
     public int getSize();
-    
-    @Override
-    @Deprecated
-    public void fetch();
 }
 
 abstract class AbstractSequenceCollection<E extends GeneticSequence> extends AbstractRecordListModel<E>

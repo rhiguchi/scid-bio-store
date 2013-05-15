@@ -10,7 +10,6 @@ import jp.scid.bio.store.base.AbstractRecordListModel;
 import jp.scid.bio.store.jooq.Tables;
 import jp.scid.bio.store.jooq.tables.records.CollectionItemRecord;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
-import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
 import jp.scid.bio.store.sequence.DefaultGeneticSequence;
 import jp.scid.bio.store.sequence.FolderContentGeneticSequence;
 import jp.scid.bio.store.sequence.GeneticSequence;
@@ -18,20 +17,19 @@ import jp.scid.bio.store.sequence.SequenceCollection;
 
 import org.jooq.Field;
 import org.jooq.Record;
-import org.jooq.RecordMapper;
 import org.jooq.Result;
 
-public class JooqBasicSequenceFolder extends AbstractFolder {
-    private final BasicSequenceCollection contents;
+public class JooqBasicFolder extends AbstractFolder {
+    private final BasicFolderSequenceCollection contents;
     
     private GeneticSequenceParser parser = null;
     
-    JooqBasicSequenceFolder(FolderRecord record) {
+    JooqBasicFolder(FolderRecord record) {
         super(record);
-        contents = new BasicSequenceCollection();
+        contents = new BasicFolderSequenceCollection();
     }
     
-    public JooqBasicSequenceFolder() {
+    public JooqBasicFolder() {
         this(new FolderRecord());
     }
     
@@ -46,61 +44,37 @@ public class JooqBasicSequenceFolder extends AbstractFolder {
         }
         long folderId = id();
         
-        GeneticSequenceRecord record = sequence.getRecord();
-        
         CollectionItemRecord item = create().newRecord(Tables.COLLECTION_ITEM);
         item.setFolderId(folderId);
-        item.setGeneticSequenceId(record);
+        item.setGeneticSequenceId(sequence.id());
         item.store();
         
-        return new FolderContentGeneticSequenceImpl(record, item);
+        DefaultFolderContentGeneticSequence content =
+                new DefaultFolderContentGeneticSequence(sequence, item);
+        
+        content.save();
+        return content;
     }
 
-    public boolean canAdd(File file) {
+    public boolean canImport(File file) {
         return parser != null;
     }
     
-    public FolderContentGeneticSequence addSequence(File file) throws IOException {
-        DefaultGeneticSequence sequence = new DefaultGeneticSequence();
-        loadSequence(file, sequence);
-        addSequence(sequence);
-        return null;
-    }
-
-    private void loadSequence(File file, DefaultGeneticSequence sequence) throws IOException {
+    public FolderContentGeneticSequence importSequence(File file) throws IOException {
         if (parser == null) {
             throw new IllegalStateException("cannot import file because parser doesn't exist");
         }
         
+        DefaultGeneticSequence sequence = new DefaultGeneticSequence();
+
         sequence.loadFrom(file, parser);
         sequence.save();
+        
+        return addSequence(sequence);
     }
     
-    static class FolderContentGeneticSequenceImpl extends DefaultGeneticSequence implements FolderContentGeneticSequence {
-        private final CollectionItemRecord itemRecord;
-
-        FolderContentGeneticSequenceImpl(GeneticSequenceRecord record,
-                CollectionItemRecord itemRecord) {
-            super(record);
-            this.itemRecord = itemRecord;
-        }
-
-        @Override
-        public Long id() {
-            return itemRecord.getId();
-        }
-
-        public Long folderId() {
-            return itemRecord.getFolderId();
-        }
-
-        public Long sequenceId() {
-            return itemRecord.getGeneticSequenceId();
-        }
-    }
-    
-    private class BasicSequenceCollection extends AbstractRecordListModel<FolderContentGeneticSequence>
-            implements SequenceCollection<FolderContentGeneticSequence>, RecordMapper<Record, FolderContentGeneticSequence> {
+    private class BasicFolderSequenceCollection extends AbstractRecordListModel<FolderContentGeneticSequence>
+            implements SequenceCollection<FolderContentGeneticSequence> {
         @Override
         protected List<FolderContentGeneticSequence> retrieve() {
             long folderId = id();
@@ -114,14 +88,7 @@ public class JooqBasicSequenceFolder extends AbstractFolder {
                     .where(Tables.COLLECTION_ITEM.FOLDER_ID.eq(folderId))
                     .orderBy(Tables.COLLECTION_ITEM.ID)
                     .fetch();
-            return result.map(this);
-        }
-
-        @Override
-        public FolderContentGeneticSequence map(Record record) {
-            GeneticSequenceRecord seq = record.into(Tables.GENETIC_SEQUENCE);
-            CollectionItemRecord item = record.into(Tables.COLLECTION_ITEM);
-            return new FolderContentGeneticSequenceImpl(seq, item);
+            return result.map(FolderContentGeneticSequenceMapper.basicMapper());
         }
     }
 }
