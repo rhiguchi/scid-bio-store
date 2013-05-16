@@ -12,7 +12,9 @@ import jp.scid.bio.store.jooq.Tables;
 import jp.scid.bio.store.jooq.tables.records.CollectionItemRecord;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
+import jp.scid.bio.store.sequence.GeneticSequence;
 import jp.scid.bio.store.sequence.LibrarySequenceCollection;
+import jp.scid.bio.store.sequence.SequenceCollection;
 
 import org.jooq.Condition;
 import org.jooq.RecordMapper;
@@ -33,7 +35,7 @@ public class SequenceLibrary {
         
         parser = new GeneticSequenceParser();
         
-        allSequences = LibrarySequenceCollection.fromFactory(factory, parser);
+        allSequences = new LibrarySequenceCollection(factory);
         
         rootFolderList = new RootFolderList();
     }
@@ -43,7 +45,7 @@ public class SequenceLibrary {
         return rootFolderList;
     }
     
-    public LibrarySequenceCollection getAllSequences() {
+    public SequenceCollection<GeneticSequence> getAllSequences() {
         return allSequences;
     }
     
