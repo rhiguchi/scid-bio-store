@@ -9,7 +9,7 @@ import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
 
 public class DefaultGeneticSequence extends AbstractRecordModel<GeneticSequenceRecord> implements GeneticSequence {
     
-    protected DefaultGeneticSequence(GeneticSequenceRecord record) {
+    public DefaultGeneticSequence(GeneticSequenceRecord record) {
         super(record);
     }
 

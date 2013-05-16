@@ -54,5 +54,5 @@ public enum CollectionType {
         return createFolder(new FolderRecord());
     }
     
-    abstract Folder createFolder(FolderRecord record);
+    public abstract Folder createFolder(FolderRecord record);
 }

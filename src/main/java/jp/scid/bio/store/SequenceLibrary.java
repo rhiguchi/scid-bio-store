@@ -2,21 +2,23 @@ package jp.scid.bio.store;
 
 import static jp.scid.bio.store.jooq.Tables.*;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import jp.scid.bio.store.base.AbstractRecordListModel;
 import jp.scid.bio.store.folder.CollectionType;
-import jp.scid.bio.store.folder.FolderList;
 import jp.scid.bio.store.folder.Folder;
+import jp.scid.bio.store.folder.FolderList;
 import jp.scid.bio.store.jooq.Tables;
 import jp.scid.bio.store.jooq.tables.records.CollectionItemRecord;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
+import jp.scid.bio.store.sequence.DefaultGeneticSequence;
 import jp.scid.bio.store.sequence.GeneticSequence;
 import jp.scid.bio.store.sequence.LibrarySequenceCollection;
 import jp.scid.bio.store.sequence.SequenceCollection;
 
-import org.jooq.Condition;
 import org.jooq.RecordMapper;
 import org.jooq.Result;
 import org.jooq.impl.Factory;
@@ -40,69 +42,51 @@ public class SequenceLibrary {
         rootFolderList = new RootFolderList();
     }
     
-    
+    // Sequences
+    public SequenceCollection<GeneticSequence> getAllSequences() {
+        return allSequences;
+    }
+
+    public GeneticSequence importSequence(File file) throws IOException {
+        GeneticSequenceRecord sequenceRecord = create.newRecord(Tables.GENETIC_SEQUENCE);
+        sequenceRecord.setName("Untitiled");
+        DefaultGeneticSequence sequence = new DefaultGeneticSequence(sequenceRecord);
+
+        sequence.loadFrom(file, parser);
+        sequence.save();
+        allSequences.add(sequence);
+        
+        return sequence;
+    }
+
+    public GeneticSequence deleteSequenceAt(int index) {
+        GeneticSequence sequence = allSequences.remove(index);
+        sequence.delete();
+        return sequence;
+    }
+
+    // Folders
     public FolderList getRootFolderList() {
         return rootFolderList;
     }
     
-    public SequenceCollection<GeneticSequence> getAllSequences() {
-        return allSequences;
-    }
-    
-    public GeneticSequenceRecord createRecord() {
-        GeneticSequenceRecord newRecord = create.newRecord(Tables.GENETIC_SEQUENCE);
-        newRecord.setId(null);
-        newRecord.setName("Untitiled");
+    public Folder addFolder(CollectionType type) {
+        FolderRecord folderRecord = create.newRecord(Tables.FOLDER);
+        folderRecord.setName(getNewFolderName(type));
         
-        return newRecord;
-    }
-
-    public boolean addNew(GeneticSequenceRecord record) {
-        int result = create.executeInsert(record);
-        return result > 0;
-    }
-
-    public boolean delete(GeneticSequenceRecord record) {
-        return create.executeDelete(record) > 0;
-    }
-
-    public List<GeneticSequenceRecord> findAll() {
-        return create.fetch(Tables.GENETIC_SEQUENCE);
-    }
-    
-    public boolean store(GeneticSequenceRecord record) {
-        return create.executeUpdate(record) > 0;
-    }
-    
-    @Deprecated
-    public List<FolderRecord> getFolders(Long parentId) {
-        return retrieveFolders(parentId);
-    }
-
-    private Result<FolderRecord> retrieveFolders(Long parentId) {
-        Condition parentCondition;
-        if (parentId == null) {
-            parentCondition = FOLDER.PARENT_ID.isNull();
-        }
-        else {
-            parentCondition = FOLDER.PARENT_ID.eq(parentId);
-        }
+        Folder folder = type.createFolder(folderRecord);
+        folder.save();
+        rootFolderList.add(folder);
         
-        Result<FolderRecord> result = create
-                .selectFrom(Tables.FOLDER)
-                .where(parentCondition)
-                .fetch();
-        return result;
+        return folder;
     }
     
-    public int delete(List<GeneticSequenceRecord> list) {
-        int count = 0;
-        for (GeneticSequenceRecord record: list) {
-            count += record.delete();
-        }
-        return count;
+    public Folder deleteFolderAt(int index) {
+        Folder folder = rootFolderList.remove(index);
+        folder.delete();
+        return folder;
     }
-
+    
     public FolderRecord findFolder(long id) {
         return create.selectFrom(FOLDER)
                 .where(FOLDER.ID.eq(id))
