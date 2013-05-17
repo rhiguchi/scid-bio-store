@@ -17,6 +17,6 @@ public class GeneticSequenceRecordMapper implements RecordMapper<GeneticSequence
     
     @Override
     public GeneticSequence map(GeneticSequenceRecord record) {
-        return new DefaultGeneticSequence(record);
+        return new JooqGeneticSequence(record);
     }
 }

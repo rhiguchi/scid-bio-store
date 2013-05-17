@@ -47,4 +47,10 @@ public class DefaultFolderContentGeneticSequence extends AbstractRecordModel<Col
     protected CollectionItemRecord createRecord() {
         return new CollectionItemRecord();
     }
+    
+    @Override
+    public File getFile() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

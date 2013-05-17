@@ -10,12 +10,14 @@ import jp.scid.bio.store.base.AbstractRecordListModel;
 import jp.scid.bio.store.folder.CollectionType;
 import jp.scid.bio.store.folder.Folder;
 import jp.scid.bio.store.folder.FolderList;
+import jp.scid.bio.store.folder.FolderRecordGroupFolder;
+import jp.scid.bio.store.folder.JooqFolderSource;
 import jp.scid.bio.store.jooq.Tables;
 import jp.scid.bio.store.jooq.tables.records.CollectionItemRecord;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
-import jp.scid.bio.store.sequence.DefaultGeneticSequence;
 import jp.scid.bio.store.sequence.GeneticSequence;
+import jp.scid.bio.store.sequence.JooqGeneticSequence;
 import jp.scid.bio.store.sequence.LibrarySequenceCollection;
 import jp.scid.bio.store.sequence.SequenceCollection;
 
@@ -32,8 +34,12 @@ public class SequenceLibrary {
     
     private final GeneticSequenceParser parser;
     
+    private final JooqFolderSource folderSource;
+    
     SequenceLibrary(Factory factory) {
         this.create = factory;
+        
+        folderSource = new JooqFolderSource(factory);
         
         parser = new GeneticSequenceParser();
         
@@ -50,8 +56,8 @@ public class SequenceLibrary {
     public GeneticSequence importSequence(File file) throws IOException {
         GeneticSequenceRecord sequenceRecord = create.newRecord(Tables.GENETIC_SEQUENCE);
         sequenceRecord.setName("Untitiled");
-        DefaultGeneticSequence sequence = new DefaultGeneticSequence(sequenceRecord);
-
+        JooqGeneticSequence sequence = new JooqGeneticSequence(sequenceRecord);
+        
         sequence.loadFrom(file, parser);
         sequence.save();
         allSequences.add(sequence);
@@ -71,10 +77,7 @@ public class SequenceLibrary {
     }
     
     public Folder addFolder(CollectionType type) {
-        FolderRecord folderRecord = create.newRecord(Tables.FOLDER);
-        folderRecord.setName(getNewFolderName(type));
-        
-        Folder folder = type.createFolder(folderRecord);
+        Folder folder = folderSource.createFolder(type, null);
         folder.save();
         rootFolderList.add(folder);
         
@@ -109,66 +112,7 @@ public class SequenceLibrary {
                 .fetchOne(FOLDER.PARENT_ID);
     }
     
-    public boolean deleteFolder(long folderId) {
-        return create.delete(FOLDER)
-                .where(FOLDER.ID.eq(folderId))
-                .execute() > 0;
-    }
-    
-    public FolderRecord createFolder(CollectionType type) {
-        FolderRecord record = create.newRecord(Tables.FOLDER);
-        record.setId(null);
-        record.setValue(FOLDER.TYPE, type, CollectionType.getConverter());
-        record.setName(getNewFolderName(type));
-        return record;
-    }
-
-    public void insertFolder(FolderRecord folder) {
-        folder.store();
-    }
-    
-    protected String getNewFolderName(CollectionType type) {
-        return "New " + type.name(); // TODO
-    }
-    
     // Contents
-    public List<GeneticSequenceRecord> fetchContent(long folderId) {
-        List<GeneticSequenceRecord> elements = create.select()
-                .from(Tables.COLLECTION_ITEM)
-                .join(Tables.GENETIC_SEQUENCE)
-                .on(COLLECTION_ITEM.GENETIC_SEQUENCE_ID.equal(GENETIC_SEQUENCE.ID))
-                .where(COLLECTION_ITEM.FOLDER_ID.equal(folderId))
-                .orderBy(COLLECTION_ITEM.ID)
-                .fetchInto(Tables.GENETIC_SEQUENCE);
-        return elements;
-    }
-    
-    public GeneticSequenceRecord addContentTo(long boxId, long exhibitId) {
-        CollectionItemRecord record = create.insertInto(COLLECTION_ITEM)
-                .set(COLLECTION_ITEM.FOLDER_ID, boxId)
-                .set(COLLECTION_ITEM.GENETIC_SEQUENCE_ID, exhibitId)
-                .returning().fetchOne();
-        
-        long recordId = record.getId();
-        
-        GeneticSequenceRecord exhibit = create.select()
-                .from(Tables.COLLECTION_ITEM)
-                .join(Tables.GENETIC_SEQUENCE)
-                .on(COLLECTION_ITEM.GENETIC_SEQUENCE_ID.equal(GENETIC_SEQUENCE.ID))
-                .where(COLLECTION_ITEM.ID.equal(recordId))
-                .fetchInto(Tables.GENETIC_SEQUENCE)
-                .get(0);
-        
-        return exhibit;
-    }
-    
-    public boolean removeContent(long contentId) {
-        int result = create.delete(COLLECTION_ITEM)
-                .where(COLLECTION_ITEM.ID.equal(contentId))
-                .execute();
-        return result > 0;
-    }
-    
     private class RootFolderList extends AbstractRecordListModel<Folder>
             implements FolderList, RecordMapper<FolderRecord, Folder> {
         @Override
@@ -183,7 +127,7 @@ public class SequenceLibrary {
         @Override
         public final Folder map(FolderRecord record) {
             CollectionType type = CollectionType.fromRecordValue(record.getType());
-            return type.createSequenceCollection(record);
+            return type.createSequenceCollection(record, folderSource);
         }
     }
 }

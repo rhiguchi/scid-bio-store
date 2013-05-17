@@ -6,11 +6,11 @@ package jp.scid.bio.store.folder;
  *
  */
 public interface GroupFolder extends Folder {
-    Folder addChild(CollectionType type);
+    Folder addNewChild(CollectionType type);
     
-    void moveChildFrom(GroupFolder list, int index);
+    void addChild(Folder folder);
     
-    Folder removeChild(int index);
+    void moveChildTo(int childIndex, GroupFolder dest);
     
     FolderList getChildFolders();
 }

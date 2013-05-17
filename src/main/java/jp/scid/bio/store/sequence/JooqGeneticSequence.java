@@ -7,13 +7,13 @@ import jp.scid.bio.store.GeneticSequenceParser;
 import jp.scid.bio.store.base.AbstractRecordModel;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
 
-public class DefaultGeneticSequence extends AbstractRecordModel<GeneticSequenceRecord> implements GeneticSequence {
+public class JooqGeneticSequence extends AbstractRecordModel<GeneticSequenceRecord> implements GeneticSequence {
     
-    public DefaultGeneticSequence(GeneticSequenceRecord record) {
+    public JooqGeneticSequence(GeneticSequenceRecord record) {
         super(record);
     }
 
-    public DefaultGeneticSequence() {
+    public JooqGeneticSequence() {
         this(null);
     }
     
@@ -47,7 +47,9 @@ public class DefaultGeneticSequence extends AbstractRecordModel<GeneticSequenceR
         // TODO Auto-generated method stub
     }
     
-    public GeneticSequenceRecord getRecord() {
-        return super.record;
+    @Override
+    public File getFile() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

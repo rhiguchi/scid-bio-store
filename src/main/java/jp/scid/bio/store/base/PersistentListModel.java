@@ -32,6 +32,11 @@ abstract public class PersistentListModel<E> extends AbstractListModel {
         pcs = new PropertyChangeSupport(this);
     }
 
+    public static <E> PersistentListModel<E> fromSource(PersistentListModel.Source<E> source) {
+        DefaultPersistentListModel<E> model = new DefaultPersistentListModel<E>(source);
+        return model;
+    }
+    
     @Override
     public int getSize() {
         return elements.size();
@@ -287,5 +292,32 @@ abstract public class PersistentListModel<E> extends AbstractListModel {
         public void remove() {
             elementIterator.remove();
         }
+    }
+
+    public static interface Source<E> {
+        List<E> retrieveElements();
+        
+        Long getElementId(E element);
+    }
+}
+
+class DefaultPersistentListModel<E> extends PersistentListModel<E> {
+    private final Source<E> source;
+    
+    public DefaultPersistentListModel(Source<E> source) {
+        super();
+        if (source == null) throw new IllegalArgumentException("source must not be null");
+        
+        this.source = source;
+    }
+
+    @Override
+    protected Long getId(E element) {
+        return source.getElementId(element);
+    }
+
+    @Override
+    protected List<E> retrieve() {
+        return source.retrieveElements();
     }
 }

@@ -10,4 +10,6 @@ import jp.scid.bio.store.base.RecordModel;
 public interface GeneticSequence extends RecordModel {
 
     void loadFrom(File file, GeneticSequenceParser parser) throws IOException;
+    
+    File getFile();
 }
