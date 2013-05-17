@@ -19,10 +19,6 @@ public class FolderRecordGroupFolder extends AbstractFolder implements GroupFold
     public FolderRecordGroupFolder(FolderRecord record) {
         super(record);
         
-        if (CollectionType.fromRecordValue(record.getType()) != CollectionType.NODE) {
-            throw new IllegalArgumentException("record type msut be a group");
-        }
-        
         childFolders = new GroupFolderChildren();
     }
 
@@ -46,10 +42,14 @@ public class FolderRecordGroupFolder extends AbstractFolder implements GroupFold
         folder.save();
     }
 
-    public Folder add(CollectionType type) {
+    public Folder addChild(CollectionType type) {
+        if (type == null) throw new IllegalArgumentException("type must not be null");
+        
         Folder folder = AbstractFolder.newFolderOf(type);
         folder.setName(getNewFolderName(type));
         childFolders.add(folder);
+        folder.save();
+        
         return folder;
     }
 
