@@ -238,8 +238,8 @@
         <ivy:info/>
         <ivy:deliver delivertarget="default" pubrevision="0.2"/>
         <copy file="${package.file}" tofile="${ivy.distrib.dir}/jars/${ant.project.name}-${version}.jar" />
-        <copy file="${source.file}" tofile="${ivy.distrib.dir}/sources/${ant.project.name}-${version}.jar" />
-        <copy file="${javadoc.file}" tofile="${ivy.distrib.dir}/javadocs/${ant.project.name}-${version}.jar" />
+        <copy file="${source.file}" tofile="${ivy.distrib.dir}/sources/${ant.project.name}-sources-${version}.jar" />
+        <copy file="${javadoc.file}" tofile="${ivy.distrib.dir}/javadocs/${ant.project.name}-javadocs-${version}.jar" />
     </target>
     
     <!-- ================================= 
@@ -269,9 +269,8 @@
     <!-- ================================= 
           target: publish              
          ================================= -->
-    <target name="publish" depends="clean, jar, test" description="publish this project in the ivy repository">
+    <target name="publish" depends="version, dist" description="publish this project in the ivy repository">
         <ivy:publish
-            artifactspattern="${build.dir}/[artifact].[ext]"
             resolver="shared"
             pubrevision="${version}"
             status="release" />
@@ -296,14 +295,8 @@
         <property name="version" value="${module.version.target}-local-${now}" />
     </target>
 
-    <target name="version" depends="ivy-new-version">
-        <!-- create version file in classpath for later inclusion in jar -->
-        <mkdir dir="${classes.main.dir}" />
-        <echo message="version=${ivy.new.revision}"
-            file="${classes.main.dir}/${ant.project.name}.properties" append="false" />
-
-        <!-- load generated version properties file -->
-        <property file="${classes.main.dir}/${ant.project.name}.properties" />
+    <target name="version">
+        <property name="version" value="${module.version.target}" />
     </target>
 </project>
 

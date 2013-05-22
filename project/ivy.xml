@@ -29,20 +29,22 @@
 		<conf name="h2" visibility="private"/>
 		<conf name="jooq-codegen" extends="h2" visibility="private"/>
 		<conf name="default"/>
+		<conf name="source"/>
+		<conf name="javadoc"/>
 		<conf name="compile" extends="default" visibility="private"/>
 		<conf name="test" extends="default" visibility="private"/>
 	</configurations>
 	
 	<publications>
 	    <artifact />
-	    <artifact type="source" ext="jar"/>
-	    <artifact type="javadoc" ext="jar"/>
+	    <artifact name="scid-bio-store-sources" type="source" ext="jar" conf="source"/>
+	    <artifact name="scid-bio-store-javadocs" type="javadoc" ext="jar" conf="javadoc"/>
 	</publications>
 	
 	<dependencies>
-	    <dependency org="com.h2database" name="h2" rev="1.3.160" conf="h2,default->default" />
+	    <dependency org="com.h2database" name="h2" rev="1.3.160" conf="h2,compile->default" />
 	    
-	    <dependency org="org.jooq" name="jooq" rev="2.6.0" conf="default,jooq-codegen->default"/>
+	    <dependency org="org.jooq" name="jooq" rev="2.6.0" conf="compile,jooq-codegen->default"/>
 	    <dependency org="org.jooq" name="jooq-meta" rev="2.6.0" conf="jooq-codegen->default"/>
 	    <dependency org="org.jooq" name="jooq-codegen" rev="2.6.0" conf="jooq-codegen->default"/>
 	    
