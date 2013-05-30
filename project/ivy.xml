@@ -44,7 +44,7 @@
 	<dependencies>
 	    <dependency org="com.h2database" name="h2" rev="1.3.160" conf="h2,compile->default" />
 	    
-	    <dependency org="org.jooq" name="jooq" rev="2.6.0" conf="compile,jooq-codegen->default"/>
+	    <dependency org="org.jooq" name="jooq" rev="2.6.0" conf="default,jooq-codegen->default"/>
 	    <dependency org="org.jooq" name="jooq-meta" rev="2.6.0" conf="jooq-codegen->default"/>
 	    <dependency org="org.jooq" name="jooq-codegen" rev="2.6.0" conf="jooq-codegen->default"/>
 	    
