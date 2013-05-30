@@ -31,16 +31,13 @@ abstract class AbstractFolder extends AbstractRecordModel<FolderRecord> implemen
     }
     
     public void setParent(GroupFolder parent) {
+        if (parent != null && parent.id() == null) {
+            throw new IllegalArgumentException("need parent id");
+        }
+        Long newParentId = parent == null ? null : parent.id();
+        record.setParentId(newParentId);
+        
         this.parent = parent;
-    }
-    
-    /**
-     * 親フォルダの id を返します。
-     * 
-     * @return 親フォルダの id。ルートフォルダで親がないときは {@code null} 。
-     */
-    public Long parentId() {
-        return record.getParentId();
     }
     
     public void setParentId(Long newParentId) {

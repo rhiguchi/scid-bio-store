@@ -56,6 +56,24 @@ public class JooqFolderSource implements Source {
         // TODO Auto-generated method stub
         return false;
     }
+
+    public void moveFolder(Folder folder, GroupFolder newParent) {
+        GroupFolder currentParent = folder.getParent();
+        
+//        source.moveFolder(this, parent);
+//        if (this.parent != null) {
+//            this.parent.getContentFolders().removeElement(this);
+//        }
+//        
+//        setParent(parent);
+//        if (parent == null)  {
+//            
+//        }
+//        else {
+//            parent.getContentFolders().addElement(this);
+//        }
+//        save();
+    }
     
     public List<Folder> retrieveFolderChildren(GroupFolder parent) {
         RootFolderMapper mapper = new RootFolderMapper(this, parent);

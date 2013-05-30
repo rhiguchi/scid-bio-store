@@ -19,32 +19,29 @@ public class FolderRecordGroupFolder extends AbstractFolder implements GroupFold
         childFolders = new GroupFolderChildren();
     }
 
-    @Override
-    public void moveChildTo(int childIndex, GroupFolder dest) {
-        Folder child = childFolders.removeElementAt(childIndex);
-        dest.addChild(child);
-        child.save();
-    }
-
-    public void addChild(Folder folder) {
-        folder.setParentId(id());
-        childFolders.add(folder);
-        
-        folder.save();
-    }
-    
-    public Folder addChildFolder(CollectionType type) {
+    public Folder addContentFolder(CollectionType type) {
         Folder folder = source.createFolder(type, id());
         childFolders.add(folder);
         folder.save();
         return folder;
     }
     
+    public void moveInto(Folder newChild) {
+        source.moveFolder(newChild, this);
+    }
+    
     @Override
-    public FolderList getChildFolders() {
+    public FolderList getContentFolders() {
         return childFolders;
     }
 
+    @Override
+    public Folder removeContentFolderAt(int index) {
+        Folder folder = childFolders.removeElementAt(index);
+        folder.delete();
+        return folder;
+    }
+    
     public static interface Source {
         FolderContentGeneticSequence createFolderContent(GeneticSequence sequence, Folder folder);
         
@@ -55,6 +52,8 @@ public class FolderRecordGroupFolder extends AbstractFolder implements GroupFold
         List<Folder> retrieveFolderChildren(GroupFolder parent);
         
         List<FolderContentGeneticSequence> retrieveFolderContents(long folderId);
+
+        void moveFolder(Folder folder, GroupFolder newParent);
     }
     
     private class GroupFolderChildren extends AbstractRecordListModel<Folder> implements FolderList {

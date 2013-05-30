@@ -6,7 +6,4 @@ package jp.scid.bio.store.folder;
  *
  */
 public interface GroupFolder extends Folder, FoldersContainer {
-    void addChild(Folder folder);
-    
-    void moveChildTo(int childIndex, GroupFolder dest);
 }

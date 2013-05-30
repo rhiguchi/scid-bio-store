@@ -17,10 +17,10 @@ public interface Folder extends RecordModel {
     GroupFolder getParent();
     
     /**
-     * 親フォルダの id を設定します。
-     * @param newParentId 新しい親のフォルダ id。親のいないルートフォルダにするときは {@code null} 。
+     * 親フォルダ を設定します。
+     * @param newParent 新しい親のフォルダ。親のいないルートフォルダにするときは {@code null} 。
      */
-    void setParentId(Long newParentId);
+    void setParent(GroupFolder newParent);
     
     /**
      * このフォルダの名前を設定します。

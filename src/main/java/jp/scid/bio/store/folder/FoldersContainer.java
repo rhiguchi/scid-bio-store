@@ -12,7 +12,7 @@ public interface FoldersContainer {
      * 
      * @return 子フォルダのリスト
      */
-    FolderList getChildFolders();
+    FolderList getContentFolders();
     
     /**
      * 子フォルダを追加します
@@ -20,11 +20,15 @@ public interface FoldersContainer {
      * @param type フォルダの型
      * @return 追加されたフォルダ
      */
-    Folder addChildFolder(CollectionType type);
+    Folder addContentFolder(CollectionType type);
     
     /**
      * 子フォルダを削除します
-     * @param child
+     * 
+     * @param index フォルダの順序
+     * @return 削除されたフォルダ
      */
-//    void removeChildFolder(Folder child);
+    Folder removeContentFolderAt(int index);
+    
+    void moveInto(Folder parent);
 }

@@ -57,6 +57,10 @@ abstract public class PersistentListModel<E> extends AbstractListModel {
     public void add(E element) {
         add(getSize(), element);
     }
+    
+    public void addElement(E element) {
+        add(element);
+    }
 
     protected void updated(int index) {
         E e = getElementAt(index);
@@ -70,6 +74,14 @@ abstract public class PersistentListModel<E> extends AbstractListModel {
         return element;
     }
     
+    public boolean removeElement(E element) {
+        int index = elements.indexOf(element);
+        if (index < 0) {
+            return false;
+        }
+        removeElementAt(index);
+        return true;
+    }
 
     // internal list handling
     protected void addAllToInternalList(int index, Collection<? extends E> newElements) {

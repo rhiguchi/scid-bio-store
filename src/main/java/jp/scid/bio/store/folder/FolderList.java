@@ -8,4 +8,8 @@ public interface FolderList extends ListModel {
     
     @Override
     public int getSize();
+    
+    boolean removeElement(Folder folder);
+    
+    void addElement(Folder folder);
 }
