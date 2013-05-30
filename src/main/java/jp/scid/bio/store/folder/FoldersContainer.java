@@ -20,5 +20,5 @@ public interface FoldersContainer {
      * @param type フォルダの型
      * @return 追加されたフォルダ
      */
-    Folder addNewChild(CollectionType type);
+    Folder addChildFolder(CollectionType type);
 }

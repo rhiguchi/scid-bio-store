@@ -29,7 +29,7 @@ public class FolderRecordGroupFolder extends AbstractFolder implements GroupFold
         folder.save();
     }
     
-    public Folder addNewChild(CollectionType type) {
+    public Folder addChildFolder(CollectionType type) {
         Folder folder = source.createFolder(type, id());
         childFolders.add(folder);
         folder.save();
