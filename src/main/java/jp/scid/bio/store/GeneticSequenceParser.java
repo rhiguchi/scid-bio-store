@@ -70,18 +70,24 @@ public class GeneticSequenceParser {
         try {
             reloadHead(record, reader);
         }
+        catch (UnknownSequenceFormatException origin) {
+            UnknownSequenceFormatException e = new UnknownSequenceFormatException(file);
+            e.initCause(origin);
+            throw e;
+        }
         finally {
             reader.close();
         }
     }
     
-    public void reloadHead(GeneticSequenceRecord record, Reader reader) throws IOException, ParseException {
+    public void reloadHead(GeneticSequenceRecord record, Reader reader)
+            throws IOException, UnknownSequenceFormatException, ParseException {
         CharBuffer buf = CharBuffer.allocate(512);
         reader.read(buf);
         
         SequenceBioDataFormat<?> bioDataFormat = findFormat(buf.flip().toString());
         if (bioDataFormat == null) {
-            throw new ParseException("unknown format", 0);
+            throw new UnknownSequenceFormatException();
         }
         
         BufferedReader source = createBufferedReader(buf, reader);
@@ -195,5 +201,22 @@ public class GeneticSequenceParser {
         pbReader.unread(headBuffer.array(), 0, headBuffer.length());
         BufferedReader source = new BufferedReader(pbReader);
         return source;
+    }
+
+    public static class UnknownSequenceFormatException extends ParseException {
+        private final File file;
+        
+        public UnknownSequenceFormatException() {
+            this(null);
+        }
+
+        public UnknownSequenceFormatException(File file) {
+            super("Unknown Format: " + file, 0);
+            this.file = file;
+        }
+        
+        public File getFile() {
+            return file;
+        }
     }
 }

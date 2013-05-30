@@ -59,6 +59,21 @@ public class JooqGeneticSequence extends AbstractRecordModel<GeneticSequenceReco
         record.setFileUri(file.toURI().toString());
     }
 
+    @Override
+    public boolean saveFileToLibrary() throws IOException {
+        String libDir = source.getSequenceFilesRootDir().getCanonicalPath();
+        
+        File file = getFile();
+        if (file == null || file.getCanonicalPath().startsWith(libDir)) {
+            return false;
+        }
+        
+        File newFile = source.saveFileToLibrary(record, file);
+        setFileUri(newFile);
+        
+        return save();
+    }
+    
     public void reload() throws IOException, ParseException {
         File file = getFile();
         if (file == null) {
@@ -114,6 +129,8 @@ public class JooqGeneticSequence extends AbstractRecordModel<GeneticSequenceReco
     
     public static interface Source {
         File getSequenceFilesRootDir();
+
+        File saveFileToLibrary(GeneticSequenceRecord record, File file) throws IOException;
 
         void loadSequence(GeneticSequenceRecord record, File file) throws IOException, ParseException;
     }

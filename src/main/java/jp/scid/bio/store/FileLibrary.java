@@ -1,64 +1,50 @@
 package jp.scid.bio.store;
 
 import static java.lang.String.*;
-import static jp.scid.bio.store.jooq.Tables.*;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.LinkedList;
-import java.util.Queue;
 
-import jp.scid.bio.sequence.SequenceBioDataFiles;
-import jp.scid.bio.sequence.SequenceBioDataFormat;
-import jp.scid.bio.sequence.SequenceBioDataReader;
-import jp.scid.bio.sequence.fasta.Fasta;
-import jp.scid.bio.sequence.fasta.FastaFormat;
-import jp.scid.bio.sequence.genbank.GenBank;
-import jp.scid.bio.sequence.genbank.GenBankFormat;
-import jp.scid.bio.store.jooq.Tables;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
+import jp.scid.bio.store.sequence.JooqGeneticSequence;
 
 import org.apache.commons.io.FileUtils;
 import org.jooq.impl.EnumConverter;
-import org.jooq.impl.Factory;
 
-public class FileLibrary {
-    private final SequenceBioDataFiles dataFiles;
-    private final Factory create;
+public class FileLibrary implements JooqGeneticSequence.Source {
+    private File sequenceFilesRoot;
+    private final GeneticSequenceParser parser;
     
-    private GenBankFormat genBankFormat = new GenBankFormat();
-    private FastaFormat fastaFormat = new FastaFormat();
-
-    private File libraryRoot;
-    
-    private String genbankExtension = ".gbk";
-    private String fastaExtension = ".fasta";
-    private String otherFileExtension = ".txt";
-    
-    FileLibrary(Factory factory) {
-        this.create = factory;
-        
-        dataFiles = SequenceBioDataFiles.newDefaultFormats();
-        
-        libraryRoot = new File(".");
+    FileLibrary() {
+        sequenceFilesRoot = new File(".", "GenomeMuseum Sequences");
+        parser = new GeneticSequenceParser();
     }
     
     public static FileLibrary newFileLibrary(File filesRoot) {
-        FileLibrary lib = new FileLibrary(null);
-        lib.libraryRoot = filesRoot;
+        FileLibrary lib = new FileLibrary();
+        lib.sequenceFilesRoot = filesRoot;
         return lib;
     }
+
+    @Override
+    public File getSequenceFilesRootDir() {
+        return sequenceFilesRoot;
+    }
     
-    public File storeFile(File sourceFile, GeneticSequenceRecord record) throws IOException {
+    @Override
+    public void loadSequence(GeneticSequenceRecord record, File file) throws IOException, ParseException {
+        parser.reloadHead(record, file);
+    }
+    
+    @Override
+    public File saveFileToLibrary(GeneticSequenceRecord record, File sourceFile) throws IOException {
         SequenceFileType fileType = SequenceFileType.fromDbValue(record.getFileType());
         String extension = getExtension(fileType);
         String baseName =
             getBaseName(record.getName(), record.getAccession(), record.getDefinition());
 
-        File outFile = new File(libraryRoot, baseName + extension);
+        File outFile = new File(sequenceFilesRoot, baseName + extension);
         int baseCount = 1;
         
         File outFileDir = outFile.getParentFile();
@@ -70,7 +56,7 @@ public class FileLibrary {
             throw new IOException(format("writing to dir %s is not allowed", outFile));
         
         while (!outFile.createNewFile()) {
-            outFile = new File(libraryRoot, baseName + " " + baseCount++ + extension);
+            outFile = new File(sequenceFilesRoot, baseName + " " + baseCount++ + extension);
         }
         
         FileUtils.copyFile(sourceFile, outFile, true);
@@ -78,27 +64,6 @@ public class FileLibrary {
         return outFile;
     }
     
-    public File convertLibraryAbsolutePath(File path) {
-        String pathString = libraryRoot.getAbsolutePath() + "/" + path.getPath();
-        return new File(pathString);
-    }
-    
-    public File convertLibraryRelativePath(File path) {
-        String absolutePath = path.getAbsolutePath();
-        String absoluteRootPath = libraryRoot.getAbsolutePath();
-        
-        if (!absolutePath.startsWith(absoluteRootPath)) {
-            throw new IllegalArgumentException(
-                    format("file %s does not start with %s", absolutePath, absoluteRootPath));
-        }
-        
-        String relativePath = absolutePath.substring(absoluteRootPath.length());
-        
-        if (relativePath.startsWith("/")) {
-            relativePath = relativePath.substring(1);
-        }
-        return new File(relativePath);
-    }
 
     String getBaseName(String name, String accession, String definition) {
         final String baseName;
@@ -118,110 +83,10 @@ public class FileLibrary {
         return baseName;
     }
 
-    String getExtension(SequenceFileType fileType) {
-        final String extension;
-        
-        if (fileType == SequenceFileType.GENBANK) {
-            extension = genbankExtension;
-        }
-        else if (fileType == SequenceFileType.FASTA) {
-            extension = fastaExtension;
-        }
-        else {
-            extension = otherFileExtension;
-        }
-        return extension;
+    private String getExtension(SequenceFileType fileType) {
+        return fileType.defaultExtension();
     }
     
-    public GeneticSequenceRecord add(File file) throws UnknownSequenceFormatException, IOException, ParseException {
-        Class<? extends SequenceBioDataFormat<?>> foundFormatClass = dataFiles.findFormat(file);
-        
-        GeneticSequenceRecord entry;
-        
-        if (foundFormatClass == GenBankFormat.class) {
-            entry = addGenBank(file);
-        }
-        else if (foundFormatClass == FastaFormat.class) {
-            entry = addFasta(file);
-        }
-        else {
-            throw new UnknownSequenceFormatException(file);
-        }
-        
-        return entry;
-    }
-    
-    public GeneticSequenceRecord addGenBank(File file) throws IOException, ParseException {
-        BufferedReader source = new BufferedReader(new FileReader(file));
-        SequenceBioDataReader<GenBank> dataReader = genBankFormat.createDataReader(source);
-        
-        Queue<GeneticSequenceRecord> records = new LinkedList<GeneticSequenceRecord>();
-        GenBank data;
-        while ((data = dataReader.readNext()) != null) {
-            java.sql.Date date = data.locus().date() != null ?new java.sql.Date(data.locus().date().getTime()) : null;
-            SequenceUnit unit = SequenceUnit.fromLabel(data.locus().sequenceUnit());
-            
-            GeneticSequenceRecord record = create.insertInto(Tables.GENETIC_SEQUENCE)
-                    .set(GENETIC_SEQUENCE.NAME, data.name())
-                    .set(GENETIC_SEQUENCE.LENGTH, data.sequenceLength())
-                    .set(GENETIC_SEQUENCE.ACCESSION, data.accessionNumber())
-                    .set(GENETIC_SEQUENCE.NAMESPACE, data.namespace())
-                    .set(GENETIC_SEQUENCE.VERSION, data.accessionVersion())
-                    .set(GENETIC_SEQUENCE.DEFINITION, data.description())
-                    .set(GENETIC_SEQUENCE.SOURCE, data.source().value())
-                    .set(GENETIC_SEQUENCE.ORGANISM, data.source().organism())
-                    .set(GENETIC_SEQUENCE.DATE, date)
-                    .set(GENETIC_SEQUENCE.UNIT, unit.index())
-                    .set(GENETIC_SEQUENCE.MOLECULE_TYPE, data.locus().molculeType())
-                    .set(GENETIC_SEQUENCE.FILE_TYPE, SequenceFileType.GENBANK.dbValue())
-                    .set(GENETIC_SEQUENCE.FILE_URI, file.toURI().toString())
-                    .returning().fetchOne();
-            records.add(record);
-        }
-        
-        
-        return records.peek();
-    }
-    
-    public GeneticSequenceRecord addFasta(File file) throws IOException, ParseException {
-        BufferedReader source = new BufferedReader(new FileReader(file));
-        SequenceBioDataReader<Fasta> dataReader = fastaFormat.createDataReader(source);
-        
-        Queue<GeneticSequenceRecord> records = new LinkedList<GeneticSequenceRecord>();
-        Fasta data;
-        while ((data = dataReader.readNext()) != null) {
-            GeneticSequenceRecord record = create.insertInto(Tables.GENETIC_SEQUENCE)
-                    .set(GENETIC_SEQUENCE.NAME, data.name())
-                    .set(GENETIC_SEQUENCE.LENGTH, data.sequenceLength())
-                    .set(GENETIC_SEQUENCE.ACCESSION, data.accessionNumber())
-                    .set(GENETIC_SEQUENCE.NAMESPACE, data.namespace())
-                    .set(GENETIC_SEQUENCE.VERSION, data.accessionVersion())
-                    .set(GENETIC_SEQUENCE.DEFINITION, data.description())
-                    .set(GENETIC_SEQUENCE.FILE_TYPE, SequenceFileType.FASTA.dbValue())
-                    .set(GENETIC_SEQUENCE.FILE_URI, file.toURI().toString())
-                    .returning().fetchOne();
-            records.add(record);
-        }
-        
-        return records.peek();
-    }
-    
-    public static class UnknownSequenceFormatException extends IOException {
-        private final File file;
-        
-        public UnknownSequenceFormatException() {
-            this(null);
-        }
-
-        public UnknownSequenceFormatException(File file) {
-            super("Unknown Format: " + file);
-            this.file = file;
-        }
-        
-        public File getFile() {
-            return file;
-        }
-    }
     
     public class SequenceFileTypeConverter extends EnumConverter<Short, SequenceFileType> {
 
@@ -270,18 +135,27 @@ public class FileLibrary {
     
     public enum SequenceFileType {
         UNKNOWN(0),
-        GENBANK(1),
-        FASTA(2),
+        GENBANK(1, ".gbk"),
+        FASTA(2, ".fasta"),
         ;
         
         private final int number;
+        private final String defaultExtension;
         
-        private SequenceFileType(int number) {
+        private SequenceFileType(int number, String defaultExtension) {
             this.number = number;
+            this.defaultExtension = defaultExtension;
+        }
+        private SequenceFileType(int number) {
+            this(number, ".txt");
         }
         
         public short dbValue() {
             return (short) number;
+        }
+        
+        public String defaultExtension() {
+            return defaultExtension;
         }
         
         public static SequenceFileType fromDbValue(short number) {

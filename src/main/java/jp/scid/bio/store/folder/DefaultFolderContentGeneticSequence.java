@@ -34,6 +34,11 @@ public class DefaultFolderContentGeneticSequence extends AbstractRecordModel<Col
     public void reload() throws IOException, ParseException {
         content.reload();
     }
+    
+    @Override
+    public boolean saveFileToLibrary() throws IOException {
+        return content.saveFileToLibrary();
+    }
 
     @Override
     public Long folderId() {
