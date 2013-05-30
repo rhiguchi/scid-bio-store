@@ -60,7 +60,7 @@ public class FolderRecordBasicFolder extends AbstractFolder {
     }
     
     public FolderContentGeneticSequence removeSequenceAt(int index) {
-        FolderContentGeneticSequence sequence = sequences.remove(index);
+        FolderContentGeneticSequence sequence = sequences.removeElementAt(index);
         sequence.delete();
         return sequence;
     }

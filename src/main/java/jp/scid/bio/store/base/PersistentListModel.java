@@ -64,7 +64,7 @@ abstract public class PersistentListModel<E> extends AbstractListModel {
         setElementToInternalList(index, e);
     }
     
-    public E remove(int index) {
+    public E removeElementAt(int index) {
         E element = removeFromInternalList(index);
         afterDelete(element);
         return element;

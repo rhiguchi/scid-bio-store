@@ -162,11 +162,11 @@ public class PersistentListModelTest {
     public void remove() {
         setElements(e1, e2, e3);
         
-        model.remove(0);
+        model.removeElementAt(0);
         assertEquals(e2, model.getElementAt(0));
         assertEquals(e3, model.getElementAt(1));
         
-        model.remove(1);
+        model.removeElementAt(1);
         assertEquals(e2, model.getElementAt(0));
         assertEquals(1, model.getSize());
     }
@@ -177,12 +177,12 @@ public class PersistentListModelTest {
         model.addListDataListener(checker);
         setElements(e1, e2, e3);
         
-        model.remove(0);
+        model.removeElementAt(0);
         assertEquals("type", ListDataEvent.INTERVAL_REMOVED, checker.event.getType());
         assertEquals("start", 0, checker.event.getIndex0());
         assertEquals("end", 0, checker.event.getIndex1());
         
-        model.remove(1);
+        model.removeElementAt(1);
         assertEquals("type", ListDataEvent.INTERVAL_REMOVED, checker.event.getType());
         assertEquals("start", 1, checker.event.getIndex0());
         assertEquals("end", 1, checker.event.getIndex1());

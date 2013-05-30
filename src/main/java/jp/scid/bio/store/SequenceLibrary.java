@@ -66,7 +66,8 @@ public class SequenceLibrary {
     }
 
     public GeneticSequence deleteSequenceAt(int index) {
-        GeneticSequence sequence = allSequences.remove(index);
+        GeneticSequence sequence = allSequences.removeElementAt(index);
+        // TODO delete file
         sequence.delete();
         return sequence;
     }
@@ -85,7 +86,7 @@ public class SequenceLibrary {
     }
     
     public Folder deleteFolderAt(int index) {
-        Folder folder = rootFolderList.remove(index);
+        Folder folder = rootFolderList.removeElementAt(index);
         folder.delete();
         return folder;
     }

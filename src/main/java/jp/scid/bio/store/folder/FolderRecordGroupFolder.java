@@ -17,7 +17,7 @@ public class FolderRecordGroupFolder extends AbstractFolder implements GroupFold
 
     @Override
     public void moveChildTo(int childIndex, GroupFolder dest) {
-        Folder child = childFolders.remove(childIndex);
+        Folder child = childFolders.removeElementAt(childIndex);
         dest.addChild(child);
         child.save();
     }
