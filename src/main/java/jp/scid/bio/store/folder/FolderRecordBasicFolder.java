@@ -2,6 +2,7 @@ package jp.scid.bio.store.folder;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 
 import jp.scid.bio.store.GeneticSequenceParser;
 import jp.scid.bio.store.folder.FolderRecordGroupFolder.Source;
@@ -46,14 +47,14 @@ public class FolderRecordBasicFolder extends AbstractFolder {
         return parser != null;
     }
     
-    public FolderContentGeneticSequence importSequence(File file) throws IOException {
+    public FolderContentGeneticSequence importSequence(File file) throws IOException, ParseException {
         if (parser == null) {
             throw new IllegalStateException("cannot import file because parser doesn't exist");
         }
         
         JooqGeneticSequence sequence = new JooqGeneticSequence();
-
-        sequence.loadFrom(file, parser);
+        sequence.setFileUri(file);
+        sequence.reload();
         sequence.save();
         
         return addSequence(sequence);

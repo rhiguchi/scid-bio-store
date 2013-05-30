@@ -2,8 +2,11 @@ package jp.scid.bio.store.folder;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Date;
+import java.text.ParseException;
 
-import jp.scid.bio.store.GeneticSequenceParser;
+import jp.scid.bio.store.FileLibrary.SequenceFileType;
+import jp.scid.bio.store.FileLibrary.SequenceUnit;
 import jp.scid.bio.store.base.AbstractRecordModel;
 import jp.scid.bio.store.jooq.tables.records.CollectionItemRecord;
 import jp.scid.bio.store.sequence.FolderContentGeneticSequence;
@@ -24,13 +27,12 @@ public class DefaultFolderContentGeneticSequence extends AbstractRecordModel<Col
 
     @Override
     public boolean save() {
-        
         return super.save() && content.save();
     }
     
     @Override
-    public void loadFrom(File file, GeneticSequenceParser parser) throws IOException {
-        content.loadFrom(file, parser);
+    public void reload() throws IOException, ParseException {
+        content.reload();
     }
 
     @Override
@@ -50,7 +52,61 @@ public class DefaultFolderContentGeneticSequence extends AbstractRecordModel<Col
     
     @Override
     public File getFile() {
-        // TODO Auto-generated method stub
-        return null;
+        return content.getFile();
+    }
+
+    @Override
+    public String name() {
+        return content.name();
+    }
+
+    @Override
+    public int length() {
+        return content.length();
+    }
+
+    @Override
+    public String accession() {
+        return content.accession();
+    }
+
+    @Override
+    public Integer version() {
+        return content.version();
+    }
+
+    @Override
+    public String definition() {
+        return content.definition();
+    }
+
+    @Override
+    public String source() {
+        return content.source();
+    }
+
+    @Override
+    public String organism() {
+        return content.organism();
+    }
+
+    @Override
+    public Date date() {
+        return content.date();
+    }
+
+    @Override
+    public SequenceUnit sequenceUnit() {
+        return content.sequenceUnit();
+    }
+
+    @Override
+    public String moleculeType() {
+        return content.moleculeType();
+    }
+
+    @Override
+    public SequenceFileType sequenceFileType() {
+        return content.sequenceFileType();
     }
 }

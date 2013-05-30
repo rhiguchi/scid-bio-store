@@ -1,9 +1,11 @@
 package jp.scid.bio.store;
 
+import static java.lang.String.*;
 import static jp.scid.bio.store.jooq.Tables.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -23,6 +25,7 @@ import jp.scid.bio.store.sequence.SequenceCollection;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.HiddenFileFilter;
+import org.jooq.Field;
 import org.jooq.impl.Factory;
 
 public class SequenceLibrary {
@@ -32,7 +35,7 @@ public class SequenceLibrary {
     
     private final LibrarySequenceCollection allSequences;
     
-    private final GeneticSequenceParser parser;
+    private final GeneticSequenceLibrary sequences;
     
     private final JooqFolderSource folderSource;
     
@@ -41,7 +44,7 @@ public class SequenceLibrary {
         
         folderSource = new JooqFolderSource(factory);
         
-        parser = new GeneticSequenceParser();
+        sequences = new GeneticSequenceLibrary();
         
         allSequences = new LibrarySequenceCollection(factory);
         
@@ -53,13 +56,16 @@ public class SequenceLibrary {
         return allSequences;
     }
 
-    public GeneticSequence importSequence(File file) throws IOException {
+    public GeneticSequence importSequence(File file) throws IOException, ParseException {
         GeneticSequenceRecord sequenceRecord = create.newRecord(Tables.GENETIC_SEQUENCE);
         sequenceRecord.setName("Untitiled");
-        JooqGeneticSequence sequence = new JooqGeneticSequence(sequenceRecord);
         
-        sequence.loadFrom(file, parser);
+        JooqGeneticSequence sequence = new JooqGeneticSequence(sequenceRecord, sequences);
+        sequence.setFileUri(file);
+        
+        sequence.reload();
         sequence.save();
+        
         allSequences.add(sequence);
         
         return sequence;
@@ -69,6 +75,7 @@ public class SequenceLibrary {
         GeneticSequence sequence = allSequences.removeElementAt(index);
         // TODO delete file
         sequence.delete();
+        
         return sequence;
     }
 
@@ -135,4 +142,23 @@ public class SequenceLibrary {
     }
 }
 
+class GeneticSequenceLibrary implements JooqGeneticSequence.Source {
+    private File sequenceFilesRoot;
+    private GeneticSequenceParser parser;
+    
+    public GeneticSequenceLibrary() {
+        sequenceFilesRoot = new File(System.getProperty("user.home"), "GenomeMuseum");
+        parser = new GeneticSequenceParser();
+    }
+    
+    @Override
+    public File getSequenceFilesRootDir() {
+        return sequenceFilesRoot;
+    }
+    
+    @Override
+    public void loadSequence(GeneticSequenceRecord record, File file) throws IOException, ParseException {
+        parser.reloadHead(record, file);
+    }
+}
 

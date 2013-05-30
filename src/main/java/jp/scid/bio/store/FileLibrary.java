@@ -262,6 +262,10 @@ public class FileLibrary {
             }
             return UNKNOWN;
         }
+
+        public static SequenceUnit fromDbValue(short number) {
+            return values()[number];
+        }
     }
     
     public enum SequenceFileType {

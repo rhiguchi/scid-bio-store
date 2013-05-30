@@ -1,11 +1,8 @@
 package jp.scid.bio.store.folder;
 
-
-
 import jp.scid.bio.store.base.RecordModel;
 import jp.scid.bio.store.sequence.FolderContentGeneticSequence;
 import jp.scid.bio.store.sequence.SequenceCollection;
-
 
 /**
  * シーケンスデータを格納したフォルダの構造定義
