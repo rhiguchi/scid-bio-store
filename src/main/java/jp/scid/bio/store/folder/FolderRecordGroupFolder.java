@@ -2,7 +2,7 @@ package jp.scid.bio.store.folder;
 
 import java.util.List;
 
-import jp.scid.bio.store.base.PersistentListModel;
+import jp.scid.bio.store.base.AbstractRecordListModel;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
 import jp.scid.bio.store.sequence.FolderContentGeneticSequence;
 
@@ -44,19 +44,15 @@ public class FolderRecordGroupFolder extends AbstractFolder implements GroupFold
     public static interface Source {
         Folder createFolder(CollectionType type, Long parentFolderId);
         
-        List<Folder> retrieveFolderChildren(long parentFolderId);
+        List<Folder> retrieveFolderChildren(GroupFolder parent);
         
         List<FolderContentGeneticSequence> retrieveFolderContents(long folderId);
     }
     
-    private class GroupFolderChildren extends PersistentListModel<Folder> implements FolderList {
-        @Override
-        protected Long getId(Folder element) {
-            return element.id();
-        }
+    private class GroupFolderChildren extends AbstractRecordListModel<Folder> implements FolderList {
         @Override
         protected List<Folder> retrieve() {
-            return source.retrieveFolderChildren(id());
+            return source.retrieveFolderChildren(FolderRecordGroupFolder.this);
         }
     }
 }

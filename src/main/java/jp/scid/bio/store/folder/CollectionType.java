@@ -9,19 +9,19 @@ import org.jooq.impl.EnumConverter;
 public enum CollectionType {
     NODE() {
         @Override
-        public Folder createFolder(FolderRecord record, Source folderSource) {
+        public AbstractFolder createFolder(FolderRecord record, Source folderSource) {
             return new FolderRecordGroupFolder(record, folderSource);
         }
     },
     BASIC() {
         @Override
-        public Folder createFolder(FolderRecord record, Source folderSource) {
+        public AbstractFolder createFolder(FolderRecord record, Source folderSource) {
             return new FolderRecordBasicFolder(record, folderSource);
         }
     },
     FILTER() {
         @Override
-        public Folder createFolder(FolderRecord record, Source folderSource) {
+        public AbstractFolder createFolder(FolderRecord record, Source folderSource) {
             return new FolderRecordFilterFolder(record, folderSource);
         }
     };
@@ -50,5 +50,5 @@ public enum CollectionType {
         return folder;
     }
     
-    public abstract Folder createFolder(FolderRecord record, Source folderSource);
+    abstract AbstractFolder createFolder(FolderRecord record, Source folderSource);
 }

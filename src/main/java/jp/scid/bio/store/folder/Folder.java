@@ -14,10 +14,10 @@ import jp.scid.bio.store.sequence.SequenceCollection;
  */
 public interface Folder extends RecordModel {
     /**
-     * 親フォルダの id を返します。
-     * @return 親フォルダの id。ルートフォルダで親がいないときは {@code null} 。
+     * 親フォルダを返します。
+     * @return 親フォルダ。ルートフォルダで親がいないときは {@code null} 。
      */
-    Long parentId();
+    GroupFolder getParent();
     
     /**
      * 親フォルダの id を設定します。

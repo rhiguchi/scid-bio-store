@@ -5,6 +5,7 @@ import static jp.scid.bio.store.jooq.Tables.*;
 import java.util.LinkedList;
 import java.util.List;
 
+import jp.scid.bio.store.base.AbstractRecordListModel;
 import jp.scid.bio.store.folder.FolderRecordGroupFolder.Source;
 import jp.scid.bio.store.jooq.Tables;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
@@ -53,11 +54,22 @@ public class JooqFolderSource implements Source {
         return false;
     }
     
-    public List<Folder> retrieveFolderChildren(long parentFolderId) {
+    public List<Folder> retrieveFolderChildren(GroupFolder parent) {
+        RootFolderMapper mapper = new RootFolderMapper(this, parent);
+        
         Result<FolderRecord> result = create.selectFrom(Tables.FOLDER)
-                .where(FOLDER.PARENT_ID.eq(parentFolderId))
+                .where(FOLDER.PARENT_ID.eq(parent.id()))
                 .fetch();
-        return result.map(folderRecordMapper);
+        return result.map(mapper);
+    }
+    
+    public List<Folder> retrieveRootFolders() {
+        RootFolderMapper mapper = new RootFolderMapper(this, null);
+        
+        Result<FolderRecord> result = create.selectFrom(Tables.FOLDER)
+                .where(FOLDER.PARENT_ID.isNull())
+                .fetch();
+        return result.map(mapper);
     }
     
     @Override
@@ -73,5 +85,24 @@ public class JooqFolderSource implements Source {
                 .orderBy(Tables.COLLECTION_ITEM.ID)
                 .fetch();
         return result.map(FolderContentGeneticSequenceMapper.basicMapper());
+    }
+    
+    static class RootFolderMapper implements RecordMapper<FolderRecord, Folder> {
+        private final FolderBuilder builder;
+        
+        public RootFolderMapper(Source source, GroupFolder parent) {
+            builder = new FolderBuilder(source);
+            builder.setParent(parent);
+        }
+        
+        @Override
+        public final Folder map(FolderRecord record) {
+            builder.setRecord(record);
+            
+            CollectionType collectionType = CollectionType.fromRecordValue(record.getType());
+            builder.setCollectionType(collectionType);
+            
+            return builder.build();
+        }
     }
 }

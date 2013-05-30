@@ -4,16 +4,16 @@ import static jp.scid.bio.store.jooq.Tables.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import jp.scid.bio.store.base.AbstractRecordListModel;
 import jp.scid.bio.store.folder.CollectionType;
 import jp.scid.bio.store.folder.Folder;
 import jp.scid.bio.store.folder.FolderList;
-import jp.scid.bio.store.folder.FolderRecordGroupFolder;
 import jp.scid.bio.store.folder.JooqFolderSource;
 import jp.scid.bio.store.jooq.Tables;
-import jp.scid.bio.store.jooq.tables.records.CollectionItemRecord;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
 import jp.scid.bio.store.sequence.GeneticSequence;
@@ -21,8 +21,8 @@ import jp.scid.bio.store.sequence.JooqGeneticSequence;
 import jp.scid.bio.store.sequence.LibrarySequenceCollection;
 import jp.scid.bio.store.sequence.SequenceCollection;
 
-import org.jooq.RecordMapper;
-import org.jooq.Result;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.HiddenFileFilter;
 import org.jooq.impl.Factory;
 
 public class SequenceLibrary {
@@ -113,22 +113,24 @@ public class SequenceLibrary {
     }
     
     // Contents
-    private class RootFolderList extends AbstractRecordListModel<Folder>
-            implements FolderList, RecordMapper<FolderRecord, Folder> {
+    private class RootFolderList extends AbstractRecordListModel<Folder> implements FolderList {
         @Override
         protected List<Folder> retrieve() {
-            Result<FolderRecord> result = create.selectFrom(Tables.FOLDER)
-                    .where(FOLDER.PARENT_ID.isNull())
-                    .fetch();
-
-            return result.map(this);
+            return folderSource.retrieveRootFolders();
         }
+    }
 
-        @Override
-        public final Folder map(FolderRecord record) {
-            CollectionType type = CollectionType.fromRecordValue(record.getType());
-            return type.createSequenceCollection(record, folderSource);
+    private static Collection<File> listFiles(File file) {
+        Collection<File> files;
+        
+        if (file.isDirectory()) {
+            files = FileUtils.listFiles(file, HiddenFileFilter.VISIBLE, HiddenFileFilter.VISIBLE);
         }
+        else {
+            files = Collections.singleton(file);
+        }
+        
+        return files;
     }
 }
 

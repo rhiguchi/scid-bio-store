@@ -14,6 +14,7 @@ import org.jooq.impl.Factory;
 abstract class AbstractFolder extends AbstractRecordModel<FolderRecord> implements Folder {
     final Source source;
     final FolderSequenceCollection sequences;
+    private GroupFolder parent;
     
     AbstractFolder(FolderRecord record, Source source) {
         super(record);
@@ -24,13 +25,13 @@ abstract class AbstractFolder extends AbstractRecordModel<FolderRecord> implemen
         sequences = new FolderSequenceCollection();
     }
     
-    /**
-     * このフォルダの id を返します。
-     * 
-     * @return id 値
-     */
-    public Long id() {
-        return record.getId();
+    @Override
+    public GroupFolder getParent() {
+        return parent;
+    }
+    
+    public void setParent(GroupFolder parent) {
+        this.parent = parent;
     }
     
     /**
@@ -59,6 +60,11 @@ abstract class AbstractFolder extends AbstractRecordModel<FolderRecord> implemen
         return (Factory) record.getConfiguration();
     }
 
+    @Override
+    public String toString() {
+        return record.getName();
+    }
+    
     @Override
     public SequenceCollection<FolderContentGeneticSequence> getContentSequences() {
         return sequences;
