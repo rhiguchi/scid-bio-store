@@ -40,11 +40,11 @@ public class SequenceLibrary {
     SequenceLibrary(Factory factory) {
         this.create = factory;
         
-        folderSource = new JooqFolderSource(factory);
-        
         sequences = new FileLibrary();
         
-        allSequences = new LibrarySequenceCollection(factory);
+        folderSource = new JooqFolderSource(sequences, factory);
+        
+        allSequences = new LibrarySequenceCollection(sequences, factory);
         
         rootFolderList = new RootFolderList();
     }

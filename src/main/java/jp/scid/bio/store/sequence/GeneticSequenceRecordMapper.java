@@ -5,18 +5,16 @@ import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
 import org.jooq.RecordMapper;
 
 public class GeneticSequenceRecordMapper implements RecordMapper<GeneticSequenceRecord, GeneticSequence> {
-    private final static GeneticSequenceRecordMapper singleton =
-            new GeneticSequenceRecordMapper();
+    private final JooqGeneticSequence.Source geneticSequenceSource;
     
-    private GeneticSequenceRecordMapper() {
-    }
-    
-    public static GeneticSequenceRecordMapper basicMapper() {
-        return singleton;
+    public GeneticSequenceRecordMapper(JooqGeneticSequence.Source geneticSequenceSource) {
+        if (geneticSequenceSource == null)
+            throw new IllegalArgumentException("geneticSequenceSource must not be null");
+        this.geneticSequenceSource = geneticSequenceSource;
     }
     
     @Override
     public GeneticSequence map(GeneticSequenceRecord record) {
-        return new JooqGeneticSequence(record);
+        return new JooqGeneticSequence(record, geneticSequenceSource);
     }
 }

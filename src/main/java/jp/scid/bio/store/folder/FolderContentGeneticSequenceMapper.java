@@ -6,24 +6,26 @@ import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
 import jp.scid.bio.store.sequence.FolderContentGeneticSequence;
 import jp.scid.bio.store.sequence.GeneticSequence;
 import jp.scid.bio.store.sequence.GeneticSequenceRecordMapper;
+import jp.scid.bio.store.sequence.JooqGeneticSequence;
 
 import org.jooq.Record;
 import org.jooq.RecordMapper;
 
 public class FolderContentGeneticSequenceMapper implements RecordMapper<Record, FolderContentGeneticSequence> {
-    private final static FolderContentGeneticSequenceMapper singleton = new FolderContentGeneticSequenceMapper();
+    private final RecordMapper<GeneticSequenceRecord, GeneticSequence> mapper;
     
-    private FolderContentGeneticSequenceMapper() {
+    public FolderContentGeneticSequenceMapper(RecordMapper<GeneticSequenceRecord, GeneticSequence> mapper) {
+        this.mapper = mapper;
     }
     
-    public static FolderContentGeneticSequenceMapper basicMapper() {
-        return singleton;
+    FolderContentGeneticSequenceMapper(JooqGeneticSequence.Source geneticSequenceSource) {
+        this(new GeneticSequenceRecordMapper(geneticSequenceSource));
     }
     
     @Override
     public FolderContentGeneticSequence map(Record record) {
         GeneticSequenceRecord seqRecord = record.into(Tables.GENETIC_SEQUENCE);
-        GeneticSequence seq = GeneticSequenceRecordMapper.basicMapper().map(seqRecord);
+        GeneticSequence seq = mapper.map(seqRecord);
         
         CollectionItemRecord item = record.into(Tables.COLLECTION_ITEM);
         DefaultFolderContentGeneticSequence content = new DefaultFolderContentGeneticSequence(seq, item);

@@ -21,4 +21,10 @@ public interface FoldersContainer {
      * @return 追加されたフォルダ
      */
     Folder addChildFolder(CollectionType type);
+    
+    /**
+     * 子フォルダを削除します
+     * @param child
+     */
+//    void removeChildFolder(Folder child);
 }

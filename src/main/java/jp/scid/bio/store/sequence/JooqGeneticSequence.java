@@ -20,16 +20,6 @@ public class JooqGeneticSequence extends AbstractRecordModel<GeneticSequenceReco
         this.source = source;
     }
     
-    @Deprecated
-    public JooqGeneticSequence(GeneticSequenceRecord record) {
-        this(record, null);
-    }
-
-    @Deprecated
-    public JooqGeneticSequence() {
-        this(null);
-    }
-    
     @Override
     protected GeneticSequenceRecord createRecord() {
         return new GeneticSequenceRecord();

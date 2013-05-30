@@ -10,11 +10,13 @@ import org.jooq.impl.Factory;
 
 public class LibrarySequenceCollection extends AbstractSequenceCollection<GeneticSequence> {
     private final Factory create;
+    private final GeneticSequenceRecordMapper mapper;
     
-    public LibrarySequenceCollection(Factory create) {
+    public LibrarySequenceCollection(JooqGeneticSequence.Source geneticSequenceSource, Factory create) {
         if (create == null) throw new IllegalArgumentException("create must not be null");
         
         this.create = create;
+        mapper = new GeneticSequenceRecordMapper(geneticSequenceSource);
     }
     
     @Override
@@ -22,6 +24,6 @@ public class LibrarySequenceCollection extends AbstractSequenceCollection<Geneti
         Result<GeneticSequenceRecord> result = create.selectFrom(Tables.GENETIC_SEQUENCE)
                 .orderBy(Tables.GENETIC_SEQUENCE.ID)
                 .fetch();
-        return result.map(GeneticSequenceRecordMapper.basicMapper());
+        return result.map(mapper);
     }
 }
