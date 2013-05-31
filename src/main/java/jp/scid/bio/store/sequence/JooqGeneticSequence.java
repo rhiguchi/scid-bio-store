@@ -71,6 +71,11 @@ public class JooqGeneticSequence extends AbstractRecordModel<GeneticSequenceReco
         source.loadSequence(record, file);
     }
     
+    @Override
+    public Long id() {
+        return record.getId();
+    }
+    
     public String name() {
         return record.getName();
     }

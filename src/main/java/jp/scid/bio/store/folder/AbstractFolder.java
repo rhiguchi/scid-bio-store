@@ -49,6 +49,11 @@ abstract class AbstractFolder extends AbstractRecordModel<FolderRecord> implemen
         return new FolderRecord();
     }
     
+    @Override
+    public Long id() {
+        return record.getId();
+    }
+    
     public void setName(String newName) {
         record.setName(newName);
     }

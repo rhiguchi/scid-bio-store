@@ -46,11 +46,6 @@ public abstract class AbstractRecordModel<R extends UpdatableRecord<R>> implemen
     }
     
     @Override
-    public Long id() {
-        return record.getValue("id", Long.class);
-    }
-    
-    @Override
     public boolean changed() {
         return record.changed();
     }

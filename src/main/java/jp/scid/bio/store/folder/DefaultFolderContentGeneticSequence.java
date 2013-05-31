@@ -26,6 +26,11 @@ public class DefaultFolderContentGeneticSequence extends AbstractRecordModel<Col
     }
 
     @Override
+    public Long id() {
+        return record.getId();
+    }
+    
+    @Override
     public boolean save() {
         return super.save() && content.save();
     }
