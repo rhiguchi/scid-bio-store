@@ -298,5 +298,9 @@
     <target name="version">
         <property name="version" value="${module.version.target}" />
     </target>
+    
+    <target name="build" depends="retrieve, jar, jar-javadoc, jar-sources"
+            description="make a jar file for this project">
+    </target>
 </project>
 
