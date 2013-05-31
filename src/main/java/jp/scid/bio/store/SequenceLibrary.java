@@ -92,6 +92,10 @@ public class SequenceLibrary {
         return sequence;
     }
 
+    public void setFilesStoreRoot(File filesStoreDirectory) {
+        sequences.setSequenceFilesRoot(filesStoreDirectory);
+    }
+    
     public GeneticSequence deleteSequenceAt(int index) {
         GeneticSequence sequence = allSequences.removeElementAt(index);
         // TODO delete file

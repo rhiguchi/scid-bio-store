@@ -31,6 +31,12 @@ public class FileLibrary implements JooqGeneticSequence.Source {
         return sequenceFilesRoot;
     }
     
+    public void setSequenceFilesRoot(File sequenceFilesRoot) {
+        if (sequenceFilesRoot == null)
+            throw new IllegalArgumentException("sequenceFilesRoot must not be null");
+        this.sequenceFilesRoot = sequenceFilesRoot;
+    }
+    
     @Override
     public void loadSequence(GeneticSequenceRecord record, File file) throws IOException, ParseException {
         parser.reloadHead(record, file);
