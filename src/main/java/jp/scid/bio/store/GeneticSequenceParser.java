@@ -22,9 +22,9 @@ import jp.scid.bio.sequence.fasta.Fasta;
 import jp.scid.bio.sequence.fasta.FastaFormat;
 import jp.scid.bio.sequence.genbank.GenBank;
 import jp.scid.bio.sequence.genbank.GenBankFormat;
-import jp.scid.bio.store.FileLibrary.SequenceFileType;
-import jp.scid.bio.store.FileLibrary.SequenceUnit;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
+import jp.scid.bio.store.sequence.SequenceFileType;
+import jp.scid.bio.store.sequence.SequenceUnit;
 
 public class GeneticSequenceParser {
     private final SequenceBioDataFiles dataFiles;
@@ -173,7 +173,7 @@ public class GeneticSequenceParser {
         record.setValue(GENETIC_SEQUENCE.SOURCE, data.source().value());
         record.setValue(GENETIC_SEQUENCE.ORGANISM, data.source().organism());
         record.setValue(GENETIC_SEQUENCE.DATE, date);
-        record.setValue(GENETIC_SEQUENCE.UNIT, unit.index());
+        record.setValue(GENETIC_SEQUENCE.UNIT, unit.dbValue());
         record.setValue(GENETIC_SEQUENCE.MOLECULE_TYPE, data.locus().molculeType());
         record.setValue(GENETIC_SEQUENCE.FILE_TYPE, SequenceFileType.GENBANK.dbValue());
     }
@@ -189,7 +189,7 @@ public class GeneticSequenceParser {
         record.setValue(GENETIC_SEQUENCE.SOURCE, "");
         record.setValue(GENETIC_SEQUENCE.ORGANISM, "");
         record.setValue(GENETIC_SEQUENCE.DATE, null);
-        record.setValue(GENETIC_SEQUENCE.UNIT, SequenceUnit.UNKNOWN.index());
+        record.setValue(GENETIC_SEQUENCE.UNIT, SequenceUnit.UNKNOWN.dbValue());
         record.setValue(GENETIC_SEQUENCE.MOLECULE_TYPE, "");
         
         record.setValue(GENETIC_SEQUENCE.FILE_TYPE, SequenceFileType.FASTA.dbValue());

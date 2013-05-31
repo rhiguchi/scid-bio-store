@@ -3,6 +3,7 @@ package jp.scid.bio.store;
 import static jp.scid.bio.store.jooq.Tables.*;
 import static org.junit.Assert.*;
 import jp.scid.bio.store.jooq.Tables;
+import jp.scid.bio.store.sequence.FileLibrary;
 
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.jooq.impl.Factory;

@@ -53,10 +53,12 @@ public class LibrarySchemaManager implements Closeable {
         if (connectionPool == null) {
             return;
         }
-        JdbcConnectionPool oldPool = connectionPool;
-        this.connectionPool = null;
-        
-        oldPool.dispose();
+        try {
+            connectionPool.dispose();
+        }
+        finally {
+            connectionPool = null;
+        }
     }
     
     public boolean isSchemaReady() {

@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.sql.Date;
 import java.text.ParseException;
 
-import jp.scid.bio.store.FileLibrary.SequenceFileType;
-import jp.scid.bio.store.FileLibrary.SequenceUnit;
 import jp.scid.bio.store.base.RecordModel;
 
 /**

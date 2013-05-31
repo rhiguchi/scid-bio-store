@@ -5,12 +5,12 @@ import java.io.IOException;
 import java.sql.Date;
 import java.text.ParseException;
 
-import jp.scid.bio.store.FileLibrary.SequenceFileType;
-import jp.scid.bio.store.FileLibrary.SequenceUnit;
 import jp.scid.bio.store.base.AbstractRecordModel;
 import jp.scid.bio.store.jooq.tables.records.CollectionItemRecord;
 import jp.scid.bio.store.sequence.FolderContentGeneticSequence;
 import jp.scid.bio.store.sequence.GeneticSequence;
+import jp.scid.bio.store.sequence.SequenceFileType;
+import jp.scid.bio.store.sequence.SequenceUnit;
 
 public class DefaultFolderContentGeneticSequence extends AbstractRecordModel<CollectionItemRecord>
         implements FolderContentGeneticSequence {

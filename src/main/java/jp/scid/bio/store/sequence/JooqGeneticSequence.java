@@ -6,8 +6,6 @@ import java.net.URI;
 import java.sql.Date;
 import java.text.ParseException;
 
-import jp.scid.bio.store.FileLibrary.SequenceFileType;
-import jp.scid.bio.store.FileLibrary.SequenceUnit;
 import jp.scid.bio.store.base.AbstractRecordModel;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
 
