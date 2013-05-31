@@ -2,7 +2,7 @@ package jp.scid.bio.store;
 
 import org.h2.jdbcx.JdbcConnectionPool;
 
-class ConnectionBuilder {
+public class ConnectionBuilder {
     String databaseNamespace = "mem:";
     
     private String databaseUser = "";

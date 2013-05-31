@@ -15,6 +15,7 @@ import org.jooq.Field;
 import org.jooq.impl.Factory;
 import org.jooq.util.h2.H2Factory;
 
+@Deprecated
 public class LibrarySchemaManager implements Closeable {
     private final Field<String> schemaField = Factory.field("table_name", String.class);
     private final ConnectionBuilder connectionBuilder;

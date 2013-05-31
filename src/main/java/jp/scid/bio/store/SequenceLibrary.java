@@ -4,6 +4,11 @@ import static jp.scid.bio.store.jooq.Tables.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.CharBuffer;
+import java.sql.Connection;
 import java.text.ParseException;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,17 +22,23 @@ import jp.scid.bio.store.folder.JooqFolderSource;
 import jp.scid.bio.store.jooq.Tables;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
-import jp.scid.bio.store.sequence.GeneticSequence;
 import jp.scid.bio.store.sequence.FileLibrary;
+import jp.scid.bio.store.sequence.GeneticSequence;
 import jp.scid.bio.store.sequence.JooqGeneticSequence;
 import jp.scid.bio.store.sequence.LibrarySequenceCollection;
 import jp.scid.bio.store.sequence.SequenceCollection;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.HiddenFileFilter;
+import org.jooq.Field;
+import org.jooq.exception.DataAccessException;
 import org.jooq.impl.Factory;
+import org.jooq.util.h2.H2Factory;
 
 public class SequenceLibrary {
+    private final static Field<String> tableNameField = Factory.field("table_name", String.class);
+    private final static Field<String> tableSchemaField = Factory.field("table_schema", String.class);
+    
     private final Factory create;
     
     private final RootFolderList rootFolderList;
@@ -48,6 +59,17 @@ public class SequenceLibrary {
         allSequences = new LibrarySequenceCollection(sequences, factory);
         
         rootFolderList = new RootFolderList();
+    }
+    
+    public static SequenceLibrary create(Connection connection) {
+        Factory factory = new H2Factory(connection);
+        SequenceLibrary library = new SequenceLibrary(factory);
+        
+        if (!library.isSchemaReady()) {
+            library.setUpSchema();
+        }
+        
+        return library;
     }
     
     // Sequences
@@ -103,16 +125,6 @@ public class SequenceLibrary {
                 .fetchOne();
     }
     
-    private boolean isNodeFolder(long folderId) {
-        Short nodeValue = CollectionType.NODE.getDbValue();
-        
-        return create.selectCount().from(FOLDER)
-                .where(FOLDER.ID.eq(folderId))
-                .and(FOLDER.TYPE.eq(nodeValue))
-                .fetchOne(0, Integer.class)
-                .intValue() > 0;
-    }
-
     public Long getParentId(long boxId) {
         return create.select(FOLDER.PARENT_ID).from(FOLDER)
                 .where(FOLDER.ID.equal(boxId))
@@ -127,6 +139,33 @@ public class SequenceLibrary {
         }
     }
 
+    private boolean isSchemaReady() {
+        List<String> names = getTableNames();
+        return !names.isEmpty();
+    }
+
+    private List<String> getTableNames() {
+        List<String> tableNames = create.select(tableNameField)
+                .from("information_schema.tables")
+                .where(tableSchemaField.eq("PUBLIC"))
+                .fetch(tableNameField);
+        return tableNames;
+    }
+
+    private void setUpSchema() {
+        // build schema tables
+        String sql;
+        try {
+            sql = getSchemaSql();
+        }
+        catch (IOException e) {
+            throw new DataAccessException("cannot retriece schema sql resource", e);
+        }
+
+        create.execute(sql);
+    }
+
+    @SuppressWarnings("unused")
     private static Collection<File> listFiles(File file) {
         Collection<File> files;
         
@@ -138,6 +177,25 @@ public class SequenceLibrary {
         }
         
         return files;
+    }
+    
+    private static String getSchemaSql() throws IOException {
+        InputStream resource = SequenceLibrary.class.getResourceAsStream("sql/schema.sql");
+        Reader reader = new InputStreamReader(resource);
+        
+        StringBuilder sql = new StringBuilder();
+        CharBuffer buf = CharBuffer.allocate(8196);
+        try {
+            while (reader.read(buf) >= 0) {
+                sql.append(buf.flip());
+                buf.clear();
+            }
+        }
+        finally {
+            reader.close();
+        }
+        
+        return sql.toString();
     }
 }
 
