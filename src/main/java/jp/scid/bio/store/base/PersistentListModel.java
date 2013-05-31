@@ -20,7 +20,7 @@ abstract public class PersistentListModel<E> extends AbstractListModel {
     private final List<E> elements;
     private long modificationValue = Long.MIN_VALUE;
     
-    public PersistentListModel() {
+    protected PersistentListModel() {
         elements = new ArrayList<E>();
         
         elementMap = new HashMap<Long, E>();

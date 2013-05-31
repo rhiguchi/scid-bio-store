@@ -1,5 +1,6 @@
 package jp.scid.bio.store.base;
 
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
 import org.jooq.AttachableInternal;
@@ -10,7 +11,6 @@ import org.jooq.impl.Factory;
 
 public abstract class AbstractRecordModel<R extends UpdatableRecord<R>> implements RecordModel {
     protected final R record;
-    @SuppressWarnings("unused")
     private final PropertyChangeSupport pcs;
 
     public AbstractRecordModel() {
@@ -39,8 +39,10 @@ public abstract class AbstractRecordModel<R extends UpdatableRecord<R>> implemen
     }
 
     @Override
-    public <T> void setValue(Field<T> field, T value) {
+    public <T> void setValue(Field<T> field, T value) throws IllegalArgumentException {
+        T oldValue = record.getValue(field);
         record.setValue(field, value);
+        firePropertyChange(field.getName(), oldValue, value);
     }
     
     @Override
@@ -65,5 +67,25 @@ public abstract class AbstractRecordModel<R extends UpdatableRecord<R>> implemen
     
     public R getRecord() {
         return record;
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(listener);
+    }
+
+    protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+        pcs.firePropertyChange(propertyName, oldValue, newValue);
+    }
+
+    protected void firePropertyChange(String propertyName, int oldValue, int newValue) {
+        pcs.firePropertyChange(propertyName, oldValue, newValue);
+    }
+
+    protected void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {
+        pcs.firePropertyChange(propertyName, oldValue, newValue);
     }
 }
