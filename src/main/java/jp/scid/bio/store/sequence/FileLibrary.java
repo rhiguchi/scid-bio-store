@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 
-import jp.scid.bio.store.GeneticSequenceParser;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
 
 import org.apache.commons.io.FileUtils;

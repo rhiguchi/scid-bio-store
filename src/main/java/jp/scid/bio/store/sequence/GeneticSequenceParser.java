@@ -1,4 +1,4 @@
-package jp.scid.bio.store;
+package jp.scid.bio.store.sequence;
 
 import static jp.scid.bio.store.jooq.Tables.*;
 
@@ -23,8 +23,6 @@ import jp.scid.bio.sequence.fasta.FastaFormat;
 import jp.scid.bio.sequence.genbank.GenBank;
 import jp.scid.bio.sequence.genbank.GenBankFormat;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
-import jp.scid.bio.store.sequence.SequenceFileType;
-import jp.scid.bio.store.sequence.SequenceUnit;
 
 public class GeneticSequenceParser {
     private final SequenceBioDataFiles dataFiles;
