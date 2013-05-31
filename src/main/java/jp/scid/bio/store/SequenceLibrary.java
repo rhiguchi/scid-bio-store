@@ -76,6 +76,11 @@ public class SequenceLibrary {
     public SequenceCollection<GeneticSequence> getAllSequences() {
         return allSequences;
     }
+    
+    public SequenceCollection<GeneticSequence> fetchSequences() {
+        allSequences.fetch();
+        return allSequences;
+    }
 
     public GeneticSequence importSequence(File file) throws IOException, ParseException {
         GeneticSequenceRecord sequenceRecord = create.newRecord(Tables.GENETIC_SEQUENCE);
