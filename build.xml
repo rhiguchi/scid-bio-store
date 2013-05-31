@@ -236,7 +236,7 @@
     <target name="dist" depends="">
         <property name="version" value="${module.version.target}" />
         <ivy:info/>
-        <ivy:deliver delivertarget="default" pubrevision="0.2"/>
+        <ivy:deliver delivertarget="default" pubrevision="${version}"/>
         <copy file="${package.file}" tofile="${ivy.distrib.dir}/jars/${ant.project.name}-${version}.jar" />
         <copy file="${source.file}" tofile="${ivy.distrib.dir}/sources/${ant.project.name}-sources-${version}.jar" />
         <copy file="${javadoc.file}" tofile="${ivy.distrib.dir}/javadocs/${ant.project.name}-javadocs-${version}.jar" />
