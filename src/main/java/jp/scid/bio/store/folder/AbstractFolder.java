@@ -9,12 +9,10 @@ import jp.scid.bio.store.jooq.tables.records.FolderRecord;
 import jp.scid.bio.store.sequence.FolderContentGeneticSequence;
 import jp.scid.bio.store.sequence.SequenceCollection;
 
-import org.jooq.impl.Factory;
-
 abstract class AbstractFolder extends AbstractRecordModel<FolderRecord> implements Folder {
     final Source source;
     final FolderSequenceCollection sequences;
-    private GroupFolder parent;
+    private FoldersContainer parent;
     
     AbstractFolder(FolderRecord record, Source source) {
         super(record);
@@ -25,23 +23,17 @@ abstract class AbstractFolder extends AbstractRecordModel<FolderRecord> implemen
         sequences = new FolderSequenceCollection();
     }
     
-    @Override
-    public GroupFolder getParent() {
+    public FoldersContainer getParent() {
         return parent;
     }
     
-    public void setParent(GroupFolder parent) {
-        if (parent != null && parent.id() == null) {
-            throw new IllegalArgumentException("need parent id");
-        }
-        Long newParentId = parent == null ? null : parent.id();
-        record.setParentId(newParentId);
-        
-        this.parent = parent;
+    public void setParent(FoldersContainer newParent) {
+        this.parent = newParent;
     }
     
-    public void setParentId(Long newParentId) {
+    private void updateParentId(Long newParentId) {
         record.setParentId(newParentId);
+        save();
     }
     
     @Override
@@ -58,10 +50,22 @@ abstract class AbstractFolder extends AbstractRecordModel<FolderRecord> implemen
         record.setName(newName);
     }
     
-    Factory create() {
-        return (Factory) record.getConfiguration();
+    @Override
+    public void deleteFromParent() {
+        parent.removeContentFolder(this);
+        setParent(null);
+        delete();
     }
+    
+    public void moveTo(FoldersContainer newParent) {
+        parent.removeContentFolder(this);
+        setParent(newParent);
+        newParent.addContentFolder(this);
 
+        Long newParentId = newParent instanceof Folder ? ((Folder) newParent).id() : null;
+        updateParentId(newParentId);
+    }
+    
     @Override
     public String toString() {
         return record.getName();

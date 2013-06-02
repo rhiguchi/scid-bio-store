@@ -18,6 +18,7 @@ import jp.scid.bio.store.base.AbstractRecordListModel;
 import jp.scid.bio.store.folder.CollectionType;
 import jp.scid.bio.store.folder.Folder;
 import jp.scid.bio.store.folder.FolderList;
+import jp.scid.bio.store.folder.FoldersContainer;
 import jp.scid.bio.store.folder.JooqFolderSource;
 import jp.scid.bio.store.jooq.Tables;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
@@ -41,7 +42,7 @@ public class SequenceLibrary {
     
     private final Factory create;
     
-    private final RootFolderList rootFolderList;
+    private final UserFoldersRoot usersFolderRoot;
     
     private final LibrarySequenceCollection allSequences;
     
@@ -58,7 +59,7 @@ public class SequenceLibrary {
         
         allSequences = new LibrarySequenceCollection(sequences, factory);
         
-        rootFolderList = new RootFolderList();
+        usersFolderRoot = new UserFoldersRoot();
     }
     
     public static SequenceLibrary create(Connection connection) {
@@ -110,42 +111,34 @@ public class SequenceLibrary {
     }
 
     // Folders
-    public FolderList getRootFolderList() {
-        return rootFolderList;
+    public UserFoldersRoot getUsersFolderRoot() {
+        return usersFolderRoot;
     }
     
+    @Deprecated
+    public FolderList getRootFolderList() {
+        return usersFolderRoot.rootFolderList;
+    }
+    
+    @Deprecated
     public Folder addFolder(CollectionType type) {
         Folder folder = folderSource.createFolder(type, null);
         folder.save();
-        rootFolderList.add(folder);
+        usersFolderRoot.rootFolderList.add(folder);
         
         return folder;
     }
     
-    public Folder deleteFolderAt(int index) {
-        Folder folder = rootFolderList.removeElementAt(index);
-        folder.delete();
-        return folder;
-    }
-    
-    public FolderRecord findFolder(long id) {
+    FolderRecord findFolder(long id) {
         return create.selectFrom(FOLDER)
                 .where(FOLDER.ID.eq(id))
                 .fetchOne();
     }
     
-    public Long getParentId(long boxId) {
+    Long getParentId(long boxId) {
         return create.select(FOLDER.PARENT_ID).from(FOLDER)
                 .where(FOLDER.ID.equal(boxId))
                 .fetchOne(FOLDER.PARENT_ID);
-    }
-    
-    // Contents
-    private class RootFolderList extends AbstractRecordListModel<Folder> implements FolderList {
-        @Override
-        protected List<Folder> retrieve() {
-            return folderSource.retrieveRootFolders();
-        }
     }
 
     private boolean isSchemaReady() {
@@ -205,6 +198,50 @@ public class SequenceLibrary {
         }
         
         return sql.toString();
+    }
+    
+    class UserFoldersRoot implements FoldersContainer {
+        private final RootFolderList rootFolderList;
+        
+        UserFoldersRoot() {
+            rootFolderList = new RootFolderList();
+        }
+        
+        @Override
+        public FolderList getContentFolders() {
+            return rootFolderList;
+        }
+
+        @Override
+        public Folder createContentFolder(CollectionType type) {
+            Folder folder = folderSource.createFolder(type, null);
+            rootFolderList.add(folder);
+            
+            return folder;
+        }
+
+        @Override
+        public Folder removeContentFolderAt(int index) {
+            return rootFolderList.removeElementAt(index);
+        }
+
+        @Override
+        public boolean removeContentFolder(Folder folder) {
+            return rootFolderList.removeElement(folder);
+        }
+
+        @Override
+        public void addContentFolder(Folder folder) {
+            rootFolderList.add(folder);
+        }
+    }
+
+    // Contents
+    private class RootFolderList extends AbstractRecordListModel<Folder> implements FolderList {
+        @Override
+        protected List<Folder> retrieve() {
+            return folderSource.retrieveRootFolders(usersFolderRoot);
+        }
     }
 }
 

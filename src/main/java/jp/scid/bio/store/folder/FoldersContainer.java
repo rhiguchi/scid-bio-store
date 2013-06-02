@@ -20,7 +20,7 @@ public interface FoldersContainer {
      * @param type フォルダの型
      * @return 追加されたフォルダ
      */
-    Folder addContentFolder(CollectionType type);
+    Folder createContentFolder(CollectionType type);
     
     /**
      * 子フォルダを削除します
@@ -30,5 +30,7 @@ public interface FoldersContainer {
      */
     Folder removeContentFolderAt(int index);
     
-    void moveInto(Folder parent);
+    boolean removeContentFolder(Folder folder);
+    
+    void addContentFolder(Folder folder);
 }

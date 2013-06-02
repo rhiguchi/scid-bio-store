@@ -7,7 +7,7 @@ public class FolderBuilder {
     private final Source folderSource;
     private CollectionType collectionType;
     private FolderRecord record;
-    private GroupFolder parent;
+    private FoldersContainer owner;
     
     public FolderBuilder(Source folderSource) {
         if (folderSource == null)
@@ -31,13 +31,13 @@ public class FolderBuilder {
         this.record = record;
     }
     
-    public void setParent(GroupFolder parent) {
-        this.parent = parent;
+    public void setParent(FoldersContainer owner) {
+        this.owner = owner;
     }
 
     public Folder build() {
         AbstractFolder folder = collectionType.createFolder(record, folderSource);
-        folder.setParent(parent);
+        folder.setParent(owner);
         return folder;
     }
 }

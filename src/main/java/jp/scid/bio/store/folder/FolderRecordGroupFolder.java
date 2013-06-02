@@ -10,7 +10,7 @@ import jp.scid.bio.store.jooq.tables.records.FolderRecord;
 import jp.scid.bio.store.sequence.FolderContentGeneticSequence;
 import jp.scid.bio.store.sequence.GeneticSequence;
 
-public class FolderRecordGroupFolder extends AbstractFolder implements GroupFolder {
+public class FolderRecordGroupFolder extends AbstractFolder implements FoldersContainer {
     private final GroupFolderChildren childFolders;
     
     public FolderRecordGroupFolder(FolderRecord record, Source source) {
@@ -19,27 +19,28 @@ public class FolderRecordGroupFolder extends AbstractFolder implements GroupFold
         childFolders = new GroupFolderChildren();
     }
 
-    public Folder addContentFolder(CollectionType type) {
+    public Folder createContentFolder(CollectionType type) {
         Folder folder = source.createFolder(type, id());
         childFolders.add(folder);
-        folder.save();
         return folder;
-    }
-    
-    public void moveInto(Folder newChild) {
-        source.moveFolder(newChild, this);
     }
     
     @Override
     public FolderList getContentFolders() {
         return childFolders;
     }
+    
+    public boolean removeContentFolder(Folder folder) {
+        return childFolders.removeElement(folder);
+    }
+    
+    public void addContentFolder(Folder folder) {
+        childFolders.addElement(folder);
+    }
 
     @Override
     public Folder removeContentFolderAt(int index) {
-        Folder folder = childFolders.removeElementAt(index);
-        folder.delete();
-        return folder;
+        return childFolders.removeElementAt(index);
     }
     
     public static interface Source {
@@ -49,17 +50,15 @@ public class FolderRecordGroupFolder extends AbstractFolder implements GroupFold
         
         Folder createFolder(CollectionType type, Long parentFolderId);
         
-        List<Folder> retrieveFolderChildren(GroupFolder parent);
+        List<Folder> retrieveFolderChildren(FoldersContainer parent, long parentFolderId);
         
         List<FolderContentGeneticSequence> retrieveFolderContents(long folderId);
-
-        void moveFolder(Folder folder, GroupFolder newParent);
     }
     
     private class GroupFolderChildren extends AbstractRecordListModel<Folder> implements FolderList {
         @Override
         protected List<Folder> retrieve() {
-            return source.retrieveFolderChildren(FolderRecordGroupFolder.this);
+            return source.retrieveFolderChildren(FolderRecordGroupFolder.this, id());
         }
     }
 }

@@ -45,6 +45,7 @@ public class JooqFolderSource implements Source {
         folderRecord.setType(type.getDbValue());
         
         Folder folder = type.createFolder(folderRecord, this);
+        folder.save();
         return folder;
     }
     
@@ -52,40 +53,18 @@ public class JooqFolderSource implements Source {
         return "New " + type.name(); // TODO
     }
 
-    boolean isDescend(Long folderId, Long folderId2) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    public void moveFolder(Folder folder, GroupFolder newParent) {
-        GroupFolder currentParent = folder.getParent();
-        
-//        source.moveFolder(this, parent);
-//        if (this.parent != null) {
-//            this.parent.getContentFolders().removeElement(this);
-//        }
-//        
-//        setParent(parent);
-//        if (parent == null)  {
-//            
-//        }
-//        else {
-//            parent.getContentFolders().addElement(this);
-//        }
-//        save();
-    }
-    
-    public List<Folder> retrieveFolderChildren(GroupFolder parent) {
+    @Override
+    public List<Folder> retrieveFolderChildren(FoldersContainer parent, long parentFolderId) {
         RootFolderMapper mapper = new RootFolderMapper(this, parent);
         
         Result<FolderRecord> result = create.selectFrom(Tables.FOLDER)
-                .where(FOLDER.PARENT_ID.eq(parent.id()))
+                .where(FOLDER.PARENT_ID.eq(parentFolderId))
                 .fetch();
         return result.map(mapper);
     }
     
-    public List<Folder> retrieveRootFolders() {
-        RootFolderMapper mapper = new RootFolderMapper(this, null);
+    public List<Folder> retrieveRootFolders(FoldersContainer parent) {
+        RootFolderMapper mapper = new RootFolderMapper(this, parent);
         
         Result<FolderRecord> result = create.selectFrom(Tables.FOLDER)
                 .where(FOLDER.PARENT_ID.isNull())
@@ -202,7 +181,10 @@ public class JooqFolderSource implements Source {
     static class RootFolderMapper implements RecordMapper<FolderRecord, Folder> {
         private final FolderBuilder builder;
         
-        public RootFolderMapper(Source source, GroupFolder parent) {
+        public RootFolderMapper(Source source, FoldersContainer parent) {
+            if (source == null) throw new IllegalArgumentException("source must not be null");
+            if (parent == null) throw new IllegalArgumentException("parent must not be null");
+            
             builder = new FolderBuilder(source);
             builder.setParent(parent);
         }

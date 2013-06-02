@@ -14,13 +14,7 @@ public interface Folder extends RecordModel {
      * 親フォルダを返します。
      * @return 親フォルダ。ルートフォルダで親がいないときは {@code null} 。
      */
-    GroupFolder getParent();
-    
-    /**
-     * 親フォルダ を設定します。
-     * @param newParent 新しい親のフォルダ。親のいないルートフォルダにするときは {@code null} 。
-     */
-    void setParent(GroupFolder newParent);
+    FoldersContainer getParent();
     
     /**
      * このフォルダの名前を設定します。
@@ -29,6 +23,11 @@ public interface Folder extends RecordModel {
      */
     void setName(String newName);
 
+    /**
+     * 親からこのフォルダを除去します。
+     */
+    void deleteFromParent();
+    
     /**
      * このフォルダにある配列情報を返します。
      * 

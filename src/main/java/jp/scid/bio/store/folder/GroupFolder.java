@@ -5,5 +5,6 @@ package jp.scid.bio.store.folder;
  * @author higuchi
  *
  */
+@Deprecated
 public interface GroupFolder extends Folder, FoldersContainer {
 }
