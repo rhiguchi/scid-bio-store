@@ -30,6 +30,8 @@ public interface FoldersContainer {
      */
     Folder removeContentFolderAt(int index);
     
+    int indexOfFolder(Folder folder);
+    
     boolean removeContentFolder(Folder folder);
     
     void addContentFolder(Folder folder);

@@ -115,20 +115,6 @@ public class SequenceLibrary {
         return usersFolderRoot;
     }
     
-    @Deprecated
-    public FolderList getRootFolderList() {
-        return usersFolderRoot.rootFolderList;
-    }
-    
-    @Deprecated
-    public Folder addFolder(CollectionType type) {
-        Folder folder = folderSource.createFolder(type, null);
-        folder.save();
-        usersFolderRoot.rootFolderList.add(folder);
-        
-        return folder;
-    }
-    
     FolderRecord findFolder(long id) {
         return create.selectFrom(FOLDER)
                 .where(FOLDER.ID.eq(id))
@@ -165,6 +151,11 @@ public class SequenceLibrary {
         }
 
         create.execute(sql);
+    }
+    
+    @Override
+    public String toString() {
+        return "Local Files";
     }
 
     @SuppressWarnings("unused")
@@ -214,15 +205,19 @@ public class SequenceLibrary {
 
         @Override
         public Folder createContentFolder(CollectionType type) {
-            Folder folder = folderSource.createFolder(type, null);
+            Folder folder = folderSource.createFolder(type, null, this);
             rootFolderList.add(folder);
-            
             return folder;
         }
 
         @Override
         public Folder removeContentFolderAt(int index) {
             return rootFolderList.removeElementAt(index);
+        }
+        
+        @Override
+        public int indexOfFolder(Folder folder) {
+            return rootFolderList.indexOf(folder);
         }
 
         @Override
@@ -233,6 +228,11 @@ public class SequenceLibrary {
         @Override
         public void addContentFolder(Folder folder) {
             rootFolderList.add(folder);
+        }
+        
+        @Override
+        public String toString() {
+            return "User Collections";
         }
     }
 

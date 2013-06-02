@@ -20,7 +20,7 @@ public class FolderRecordGroupFolder extends AbstractFolder implements FoldersCo
     }
 
     public Folder createContentFolder(CollectionType type) {
-        Folder folder = source.createFolder(type, id());
+        Folder folder = source.createFolder(type, id(), this);
         childFolders.add(folder);
         return folder;
     }
@@ -43,12 +43,17 @@ public class FolderRecordGroupFolder extends AbstractFolder implements FoldersCo
         return childFolders.removeElementAt(index);
     }
     
+    @Override
+    public int indexOfFolder(Folder folder) {
+        return childFolders.indexOf(folder);
+    }
+    
     public static interface Source {
         FolderContentGeneticSequence createFolderContent(GeneticSequence sequence, Folder folder);
         
         GeneticSequence createGeneticSequence(File file) throws IOException, ParseException;
         
-        Folder createFolder(CollectionType type, Long parentFolderId);
+        Folder createFolder(CollectionType type, Long parentFolderId, FoldersContainer parent);
         
         List<Folder> retrieveFolderChildren(FoldersContainer parent, long parentFolderId);
         

@@ -41,6 +41,10 @@ abstract public class PersistentListModel<E> extends AbstractListModel {
         return elements.get(index);
     }
 
+    public int indexOf(E element) {
+        return elements.indexOf(element);
+    }
+    
     List<E> getElements() {
         return elements;
     }

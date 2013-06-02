@@ -37,14 +37,15 @@ public class JooqFolderSource implements Source {
     }
 
     @Override
-    public Folder createFolder(CollectionType type, Long parentFolderId) {
+    public Folder createFolder(CollectionType type, Long parentFolderId, FoldersContainer parent) {
         if (type == null) throw new IllegalArgumentException("type must not be null");
         
         FolderRecord folderRecord = create.newRecord(Tables.FOLDER);
         folderRecord.setName(getNewFolderName(type));
         folderRecord.setType(type.getDbValue());
+        folderRecord.setParentId(parentFolderId);
         
-        Folder folder = type.createFolder(folderRecord, this);
+        Folder folder = new RootFolderMapper(this, parent).map(folderRecord);
         folder.save();
         return folder;
     }
