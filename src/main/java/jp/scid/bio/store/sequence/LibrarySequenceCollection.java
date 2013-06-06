@@ -2,13 +2,14 @@ package jp.scid.bio.store.sequence;
 
 import java.util.List;
 
+import jp.scid.bio.store.base.AbstractRecordListModel;
 import jp.scid.bio.store.jooq.Tables;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
 
 import org.jooq.Result;
 import org.jooq.impl.Factory;
 
-public class LibrarySequenceCollection extends AbstractSequenceCollection<GeneticSequence> {
+public class LibrarySequenceCollection extends AbstractRecordListModel<GeneticSequence> implements SequenceCollection<GeneticSequence> {
     private final Factory create;
     private final GeneticSequenceRecordMapper mapper;
     
