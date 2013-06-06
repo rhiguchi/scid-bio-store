@@ -15,9 +15,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.RunnableFuture;
 
 import jp.scid.bio.store.base.AbstractRecordListModel;
 import jp.scid.bio.store.folder.CollectionType;
@@ -30,6 +27,7 @@ import jp.scid.bio.store.jooq.tables.records.FolderRecord;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
 import jp.scid.bio.store.sequence.FileLibrary;
 import jp.scid.bio.store.sequence.GeneticSequence;
+import jp.scid.bio.store.sequence.GeneticSequenceRecordMapper;
 import jp.scid.bio.store.sequence.JooqGeneticSequence;
 import jp.scid.bio.store.sequence.LibrarySequenceCollection;
 import jp.scid.bio.store.sequence.SequenceCollection;
@@ -37,6 +35,7 @@ import jp.scid.bio.store.sequence.SequenceCollection;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.HiddenFileFilter;
 import org.jooq.Field;
+import org.jooq.Result;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.Factory;
 import org.jooq.util.h2.H2Factory;
@@ -87,12 +86,16 @@ public class SequenceLibrary {
         allSequences.fetch();
         return allSequences;
     }
+    
+    public List<GeneticSequence> fetch() {
+        Result<GeneticSequenceRecord> result = create.selectFrom(Tables.GENETIC_SEQUENCE)
+                .orderBy(Tables.GENETIC_SEQUENCE.ID)
+                .fetch();
+        return result.map(new GeneticSequenceRecordMapper(sequences));
+    }
 
     public GeneticSequence importSequence(File file) throws IOException, ParseException {
-        GeneticSequenceRecord sequenceRecord = create.newRecord(Tables.GENETIC_SEQUENCE);
-        sequenceRecord.setName("Untitiled");
-        
-        JooqGeneticSequence sequence = new JooqGeneticSequence(sequenceRecord, sequences);
+        JooqGeneticSequence sequence = createGeneticSequence();
         sequence.setFileUri(file);
         
         sequence.reload();
@@ -104,10 +107,7 @@ public class SequenceLibrary {
     }
     
     public Callable<GeneticSequence> createSequenceImportTask(File file) {
-        GeneticSequenceRecord sequenceRecord = create.newRecord(Tables.GENETIC_SEQUENCE);
-        sequenceRecord.setName("Untitiled");
-        
-        final JooqGeneticSequence sequence = new JooqGeneticSequence(sequenceRecord, sequences);
+        final JooqGeneticSequence sequence = createGeneticSequence();
         sequence.setFileUri(file);
         
         final Runnable modelAppender = new Runnable() {
@@ -131,6 +131,14 @@ public class SequenceLibrary {
             }
         };
         return loader;
+    }
+
+    private JooqGeneticSequence createGeneticSequence() {
+        GeneticSequenceRecord sequenceRecord = create.newRecord(Tables.GENETIC_SEQUENCE);
+        sequenceRecord.setName("Untitiled");
+        
+        JooqGeneticSequence sequence = new JooqGeneticSequence(sequenceRecord, sequences);
+        return sequence;
     }
 
     public void setFilesStoreRoot(File filesStoreDirectory) {
