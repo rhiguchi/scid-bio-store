@@ -120,6 +120,10 @@ public class JooqGeneticSequence extends AbstractRecordModel<GeneticSequenceReco
         return SequenceFileType.fromDbValue(record.getFileType());
     }
     
+    public String namespace() {
+        return record.getNamespace();
+    }
+    
     public static interface Source {
         File getSequenceFilesRootDir();
 

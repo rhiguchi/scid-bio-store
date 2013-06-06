@@ -40,29 +40,91 @@ public interface GeneticSequence extends RecordModel {
     /**
      * この配列情報の元データの場所を返します。
      * 
-     * @return 元データファイルの場所
+     * @return 元データファイルの場所。ローカルファイルにないときは {@code null} 。
      */
     File getFile();
 
+    /**
+     * 名前を返します。
+     * 
+     * @return 名前
+     */
     String name();
 
+    /**
+     * 塩基配列の長さを返します。
+     * 
+     * @return　塩基配列の長さ
+     */
     int length();
 
+    /**
+     * アクセッション番号を返します。
+     * 
+     * @return アクセッション番号
+     */
     String accession();
 
+    /**
+     * バージョン番号を返します。
+     * 
+     * @return バージョン番号。不明なときは {@code null}
+     */
     Integer version();
 
+    /**
+     * 定義記述を返します。
+     * 
+     * @return 定義
+     */
     String definition();
 
+    /**
+     * 由来記述を返します。
+     * 
+     * @return ソース
+     */
     String source();
 
+    /**
+     * 生物種を返します。
+     * 
+     * @return 生物種
+     */
     String organism();
 
+    /**
+     * 最終更新日付を返します。
+     * 
+     * @return 更新日付
+     */
     Date date();
 
+    /**
+     * 配列の単位を返します。
+     * 
+     * @return 単位
+     */
     SequenceUnit sequenceUnit();
 
+    /**
+     * 配列の名前空間を返します。
+     * 
+     * @return 名前空間。
+     */
+    String namespace();
+    
+    /**
+     * 配列の種類を返します。
+     * 
+     * @return 種類
+     */
     String moleculeType();
     
+    /**
+     * ファイルの種類を返します。
+     * 
+     * @return ファイルの種類
+     */
     SequenceFileType sequenceFileType();
 }

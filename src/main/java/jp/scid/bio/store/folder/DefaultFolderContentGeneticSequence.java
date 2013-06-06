@@ -106,6 +106,11 @@ public class DefaultFolderContentGeneticSequence extends AbstractRecordModel<Col
     }
 
     @Override
+    public String namespace() {
+        return content.namespace();
+    }
+    
+    @Override
     public SequenceUnit sequenceUnit() {
         return content.sequenceUnit();
     }
