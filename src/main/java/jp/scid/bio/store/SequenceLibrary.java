@@ -2,6 +2,7 @@ package jp.scid.bio.store;
 
 import static jp.scid.bio.store.jooq.Tables.*;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,6 +14,10 @@ import java.text.ParseException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.RunnableFuture;
 
 import jp.scid.bio.store.base.AbstractRecordListModel;
 import jp.scid.bio.store.folder.CollectionType;
@@ -96,6 +101,36 @@ public class SequenceLibrary {
         allSequences.add(sequence);
         
         return sequence;
+    }
+    
+    public Callable<GeneticSequence> createSequenceImportTask(File file) {
+        GeneticSequenceRecord sequenceRecord = create.newRecord(Tables.GENETIC_SEQUENCE);
+        sequenceRecord.setName("Untitiled");
+        
+        final JooqGeneticSequence sequence = new JooqGeneticSequence(sequenceRecord, sequences);
+        sequence.setFileUri(file);
+        
+        final Runnable modelAppender = new Runnable() {
+            public void run() {
+                allSequences.add(sequence);
+            }
+        };
+        
+        Callable<GeneticSequence> loader = new Callable<GeneticSequence>() {
+            @Override
+            public GeneticSequence call() throws Exception {
+                sequence.reload();
+                sequence.save();
+                if (EventQueue.isDispatchThread()) {
+                    modelAppender.run();
+                }
+                else {
+                    EventQueue.invokeAndWait(modelAppender);
+                }
+                return sequence;
+            }
+        };
+        return loader;
     }
 
     public void setFilesStoreRoot(File filesStoreDirectory) {
