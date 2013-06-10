@@ -7,7 +7,12 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
 import org.apache.http.HttpEntity;
@@ -42,6 +47,7 @@ public class RemoteSource {
 
     private final URI togowsBaseUri = URI.create("http://togows.dbcls.jp");
     private final HttpClient httpclient = new DefaultHttpClient();
+    private int oneQueryLimit = 10;
     
     int retrieveCount(String string) throws IOException {
         String path = getCountQueryPath(string);
@@ -56,8 +62,8 @@ public class RemoteSource {
         return Arrays.asList(identifiers);
     }
     
-    List<RemoteEntry> searchEntry(String... identifiers) throws IOException {
-        if (identifiers == null || identifiers.length == 0) {
+    List<RemoteEntry> searchEntry(List<String> identifiers) throws IOException {
+        if (identifiers == null || identifiers.size() == 0) {
             throw new IllegalArgumentException("identifiers must not be empty");
         }
         
@@ -67,11 +73,11 @@ public class RemoteSource {
         String[] taxonomy = retrieveField(EntryField.TAXONOMY, identifiersString);
         int[] length = parseInt(retrieveField(EntryField.LENGTH, identifiersString));
         
-        List<RemoteEntry> entries = new ArrayList<RemoteEntry>(identifiers.length);
+        List<RemoteEntry> entries = new ArrayList<RemoteEntry>(identifiers.size());
         RemoteEntryBuilder builder = new RemoteEntryBuilder();
         
-        for (int i = 0; i < identifiers.length; i++) {
-            builder.identifier(identifiers[i]);
+        for (int i = 0; i < identifiers.size(); i++) {
+            builder.identifier(identifiers.get(i));
             builder.accession(accession[i]);
             builder.definition(definitions[i]);
             builder.sequenceLength(length[i]);
@@ -136,7 +142,7 @@ public class RemoteSource {
         return getQueryPathString(Command.SEARCH, urlEncode(string), option);
     }
     
-    private static String join(String... identifiers) {
+    private static String join(List<String> identifiers) {
         StringBuilder queryBuilder = new StringBuilder();
         for (String identifier: identifiers) {
             queryBuilder.append(identifier).append(",");
@@ -254,21 +260,150 @@ public class RemoteSource {
         }
     }
     
-    public static interface Result {
-        String queryString();
+    private Callable<Result> createSearchTask(String query, int limit, ResultHandler resultHandler) throws IOException {
+        AllEntriesSearchingTask task = new AllEntriesSearchingTask(query, resultHandler);
         
-        boolean matchCountReady();
+        int pageLimit = oneQueryLimit;
+        for (int offset = 1; offset <= limit; offset += pageLimit) {
+            PageEntriesSearchingTask pageTask =
+                    new PageEntriesSearchingTask(query, offset, pageLimit);
+            task.addTask(pageTask);
+        }
         
-        int matchCount();
-        
-        boolean isDone();
-        
-        List<RemoteEntry> getEntries();
-        
-        void cancel();
+        return task;
     }
     
-    static class ResultImpl {
+    public Callable<Searcher> createSearchTask(final String query, final ResultHandler resultHandler) {
+        return new Callable<Searcher>() {
+            @Override
+            public Searcher call() throws Exception {
+                int count = retrieveCount(query);
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException();
+                }
+                
+                Callable<Result> resultTask = createSearchTask(query, count, resultHandler);
+                return new Searcher(count, resultTask);
+            }
+        };
+    }
+    
+    public static interface ResultHandler {
+        void process(List<RemoteEntry> results);
+    }
+    
+    public static class Searcher implements Callable<Result> {
+        private int count;
+        private Callable<Result> task;
         
+        private Searcher(int count, Callable<Result> task) {
+            this.count = count;
+            this.task = task;
+        }
+
+        public int getCount() {
+            return count;
+        }
+        
+        @Override
+        public Result call() throws Exception {
+            return task.call();
+        }
+    }
+    
+    class PageEntriesSearchingTask implements Callable<List<RemoteEntry>> {
+        private final String query;
+        private final int offset;
+        private final int limit;
+        
+        public PageEntriesSearchingTask(String query, int offset, int limit) {
+            this.query = query;
+            this.offset = offset;
+            this.limit = limit;
+        }
+
+        @Override
+        public List<RemoteEntry> call() throws Exception {
+            List<String> identifiers = searchIdentifiers(query, offset, limit);
+            if (Thread.currentThread().isInterrupted()) {
+                throw new InterruptedException("page");
+            }
+            return searchEntry(identifiers);
+        }
+    }
+    
+    class AllEntriesSearchingTask implements Callable<Result> {
+        private Queue<PageEntriesSearchingTask> pageTasks;
+
+        private final ResultBuilder builder;
+        private final ResultHandler handler;
+        
+        public AllEntriesSearchingTask(String query, ResultHandler handler) {
+            this.pageTasks = new LinkedList<PageEntriesSearchingTask>();
+            builder = new ResultBuilder(query);
+            this.handler = handler;
+        }
+
+        public boolean addTask(PageEntriesSearchingTask e) {
+            return pageTasks.add(e);
+        }
+        
+        @Override
+        public Result call() throws Exception {
+            while (!pageTasks.isEmpty()) {
+                PageEntriesSearchingTask t = pageTasks.remove();
+                
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException("Searching is Cancelled");
+                }
+                
+                List<RemoteEntry> list = t.call();
+                builder.addEntries(list);
+                
+                handler.process(list);
+            }
+            
+            return builder.build();
+        }
+    }
+    
+    public static class Result {
+        private final String queryString;
+        private final List<RemoteEntry> entries;
+        
+        private Result(ResultBuilder builder) {
+            this.queryString = builder.queryString;
+            entries = Collections.unmodifiableList(new ArrayList<RemoteEntry>(builder.entries));
+        }
+        
+        public String queryString() {
+            return queryString;
+        }
+        
+        public int count() {
+            return entries.size();
+        }
+        
+        public List<RemoteEntry> getEntries() {
+            return entries;
+        }
+    }
+    
+    private static class ResultBuilder {
+        private String queryString = "";
+        private final List<RemoteEntry> entries;
+
+        public ResultBuilder(String queryString) {
+            this.queryString = queryString;
+            entries = new LinkedList<RemoteEntry>();
+        }
+        
+        public Result build() {
+            return new Result(this);
+        }
+        
+        public boolean addEntries(Collection<RemoteEntry> entries) {
+            return entries.addAll(entries);
+        }
     }
 }

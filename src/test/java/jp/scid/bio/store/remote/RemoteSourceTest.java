@@ -3,6 +3,7 @@ package jp.scid.bio.store.remote;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import jp.scid.bio.store.remote.RemoteSource.RemoteEntry;
@@ -32,7 +33,7 @@ public class RemoteSourceTest {
     
     @Test
     public void searchEntry() throws IOException {
-        List<RemoteEntry> result = model.searchEntry("J00231", "510145809");
+        List<RemoteEntry> result = model.searchEntry(Arrays.asList("J00231", "510145809"));
         
         assertEquals(2, result.size());
         
