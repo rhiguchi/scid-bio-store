@@ -32,8 +32,8 @@ public class RemoteSourceTest {
     }
     
     @Test
-    public void searchEntry() throws IOException {
-        List<RemoteEntry> result = model.searchEntry(Arrays.asList("J00231", "510145809"));
+    public void searchEntry() throws IOException, InterruptedException {
+        List<RemoteEntry> result = model.retrieveEntry(Arrays.asList("J00231", "510145809"));
         
         assertEquals(2, result.size());
         

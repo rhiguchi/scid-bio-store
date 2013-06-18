@@ -49,11 +49,17 @@ public class RemoteSource {
     private final HttpClient httpclient = new DefaultHttpClient();
     private int oneQueryLimit = 10;
     
-    int retrieveCount(String string) throws IOException {
+    public int retrieveCount(String string) throws IOException {
         String path = getCountQueryPath(string);
         String content = retrieveContentFromTogows(path);
         
         return perseInt(content);
+    }
+
+    public List<RemoteEntry> searchEntry(String query, int offset, int limit) throws IOException, InterruptedException {
+        List<String> identifiers = searchIdentifiers(query, offset, limit);
+        checkInterruption();
+        return retrieveEntry(identifiers);
     }
 
     List<String> searchIdentifiers(String query, int offset, int limit) throws IOException {
@@ -62,15 +68,21 @@ public class RemoteSource {
         return Arrays.asList(identifiers);
     }
     
-    List<RemoteEntry> searchEntry(List<String> identifiers) throws IOException {
+    List<RemoteEntry> retrieveEntry(List<String> identifiers) throws IOException, InterruptedException {
         if (identifiers == null || identifiers.size() == 0) {
             throw new IllegalArgumentException("identifiers must not be empty");
         }
         
         String identifiersString = join(identifiers);
         String[] definitions = retrieveField(EntryField.DEFINITION, identifiersString);
+        
+        checkInterruption();
         String[] accession = retrieveField(EntryField.ACCESSION, identifiersString);
+        
+        checkInterruption();
         String[] taxonomy = retrieveField(EntryField.TAXONOMY, identifiersString);
+        
+        checkInterruption();
         int[] length = parseInt(retrieveField(EntryField.LENGTH, identifiersString));
         
         List<RemoteEntry> entries = new ArrayList<RemoteEntry>(identifiers.size());
@@ -191,6 +203,12 @@ public class RemoteSource {
             throw new IllegalStateException(e);
         }
     }
+
+    private static void checkInterruption() throws InterruptedException {
+        if (Thread.interrupted()) {
+            throw new InterruptedException();
+        }
+    }
     
     private static class RemoteEntryBuilder {
         private String identifier = "";
@@ -273,7 +291,7 @@ public class RemoteSource {
         return task;
     }
     
-    public Callable<Searcher> createSearchTask(final String query, final ResultHandler resultHandler) {
+    Callable<Searcher> createSearchTask(final String query, final ResultHandler resultHandler) {
         return new Callable<Searcher>() {
             @Override
             public Searcher call() throws Exception {
@@ -328,7 +346,7 @@ public class RemoteSource {
             if (Thread.currentThread().isInterrupted()) {
                 throw new InterruptedException("page");
             }
-            return searchEntry(identifiers);
+            return retrieveEntry(identifiers);
         }
     }
     
