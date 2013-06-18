@@ -32,8 +32,7 @@
         <conf name="source"/>
         <conf name="javadoc"/>
         <conf name="compile" extends="default" visibility="private"/>
-        <conf name="remote" extends="default"/>
-        <conf name="test" extends="remote" visibility="private"/>
+        <conf name="test" extends="compile" visibility="private"/>
     </configurations>
     
     <publications>
@@ -47,7 +46,7 @@
         <dependency org="org.jooq" name="jooq" rev="2.6.0"/>
         <dependency org="jp.scid" name="scid-bio" rev="0.2.1"/>
         <dependency org="commons-io" name="commons-io" rev="2.3"/>
-        <dependency org="org.apache.httpcomponents" name="httpclient" rev="4.2.5" conf="remote->default"/>
+        <dependency org="org.apache.httpcomponents" name="httpclient" rev="4.2.5" conf="compile->default"/>
 
         <dependency org="org.jooq" name="jooq-meta" rev="2.6.0" conf="jooq-codegen->default"/>
         <dependency org="org.jooq" name="jooq-codegen" rev="2.6.0" conf="jooq-codegen->default"/>
