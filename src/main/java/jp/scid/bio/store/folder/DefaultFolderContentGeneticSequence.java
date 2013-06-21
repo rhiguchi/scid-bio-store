@@ -124,4 +124,9 @@ public class DefaultFolderContentGeneticSequence extends AbstractRecordModel<Col
     public SequenceFileType sequenceFileType() {
         return content.sequenceFileType();
     }
+    
+    @Override
+    public String sequence() {
+        return content.sequence();
+    }
 }

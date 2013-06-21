@@ -4,6 +4,7 @@ import static jp.scid.bio.store.jooq.Tables.*;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PushbackReader;
@@ -102,6 +103,24 @@ public class GeneticSequenceParser {
         else {
             throw new ParseException("cannot read data as " + bioDataFormat, 0);
         }
+    }
+    
+    public SequenceBioDataReader<?> createBioDataReader(File file, SequenceFileType fileType) throws FileNotFoundException {
+        SequenceBioDataFormat<?> format;
+        
+        switch (fileType) {
+        case GENBANK:
+            format = genBankFormat;
+            break;
+        case FASTA:
+            format = fastaFormat;
+            break;
+        default:
+            throw new IllegalArgumentException(String.format("cannot find parser of type %s", fileType));
+        }
+        
+        BufferedReader source = new BufferedReader(new FileReader(file));
+        return format.createDataReader(source);
     }
     
     private SequenceBioDataFormat<?> findFormat(String dataText) {

@@ -3,9 +3,12 @@ package jp.scid.bio.store.sequence;
 import static java.lang.String.*;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
 
+import jp.scid.bio.sequence.SequenceBioData;
+import jp.scid.bio.sequence.SequenceBioDataReader;
 import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
 
 import org.apache.commons.io.FileUtils;
@@ -35,6 +38,32 @@ public class FileLibrary implements JooqGeneticSequence.Source {
         if (sequenceFilesRoot == null)
             throw new IllegalArgumentException("sequenceFilesRoot must not be null");
         this.sequenceFilesRoot = sequenceFilesRoot;
+    }
+    
+    @Override
+    public String readContentSequence(File file, SequenceFileType fileType) {
+        StringBuilder sb = new StringBuilder();
+        
+        try {
+            SequenceBioDataReader<?> dataReader = parser.createBioDataReader(file, fileType);
+            
+            SequenceBioData data;
+            while ((data = dataReader.readNext()) != null) {
+                sb.append(data.sequence());
+            }
+        }
+        catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return "";
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        catch (ParseException e) {
+            e.printStackTrace();
+        }
+        
+        return sb.toString();
     }
     
     @Override

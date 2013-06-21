@@ -127,4 +127,11 @@ public interface GeneticSequence extends RecordModel {
      * @return ファイルの種類
      */
     SequenceFileType sequenceFileType();
+    
+    /**
+     * 配列文字列を返します。
+     * 
+     * @return 配列
+     */
+    String sequence();
 }

@@ -124,9 +124,25 @@ public class JooqGeneticSequence extends AbstractRecordModel<GeneticSequenceReco
         return record.getNamespace();
     }
     
+    @Override
+    public String sequence() {
+        File file = getFile();
+        if (file == null) {
+            return "";
+        }
+        SequenceFileType fileType = sequenceFileType();
+        if (fileType == SequenceFileType.UNKNOWN) {
+            return "";
+        }
+        
+        return source.readContentSequence(file, fileType);
+    }
+    
     public static interface Source {
         File getSequenceFilesRootDir();
 
+        String readContentSequence(File file, SequenceFileType fileType);
+        
         File saveFileToLibrary(GeneticSequenceRecord record, File file) throws IOException;
 
         void loadSequence(GeneticSequenceRecord record, File file) throws IOException, ParseException;
