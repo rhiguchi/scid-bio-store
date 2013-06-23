@@ -89,11 +89,15 @@ public class RemoteSource {
         RemoteEntryBuilder builder = new RemoteEntryBuilder();
         
         for (int i = 0; i < identifiers.size(); i++) {
-            builder.identifier(identifiers.get(i));
+            String identifier = identifiers.get(i);
+            URI sourceUri = createQueryUri(getQueryPathString(Command.ENTRY, identifier, ""));
+            
+            builder.identifier(identifier);
             builder.accession(accession[i]);
             builder.definition(definitions[i]);
             builder.sequenceLength(length[i]);
             builder.taxonomy(taxonomy[i]);
+            builder.sourceUri(sourceUri);
             
             entries.add(builder.build());
         }
@@ -216,6 +220,7 @@ public class RemoteSource {
         private int sequenceLength = 0;
         private String definition = "";
         private String taxonomy = "";
+        private URI sourceUri = null;
         
         public RemoteEntry build() {
             return new RemoteEntry(this);
@@ -240,6 +245,10 @@ public class RemoteSource {
         public void taxonomy(String taxonomy) {
             this.taxonomy = taxonomy;
         }
+        
+        public void sourceUri(URI sourceUri) {
+            this.sourceUri = sourceUri;
+        }
     }
     
     public static class RemoteEntry {
@@ -248,6 +257,7 @@ public class RemoteSource {
         private final int sequenceLength;
         private final String definition;
         private final String taxonomy;
+        private final URI sourceUri;
         
         RemoteEntry(RemoteEntryBuilder builder) {
             this.identifier = builder.identifier;
@@ -255,6 +265,7 @@ public class RemoteSource {
             this.sequenceLength = builder.sequenceLength;
             this.definition = builder.definition;
             this.taxonomy = builder.taxonomy;
+            this.sourceUri = builder.sourceUri;
         }
         
         public String identifier() {
@@ -275,6 +286,10 @@ public class RemoteSource {
         
         public String taxonomy() {
             return taxonomy;
+        }
+        
+        public URI sourceUri() {
+            return sourceUri;
         }
     }
     
