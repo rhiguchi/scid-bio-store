@@ -8,15 +8,26 @@ import java.util.List;
 
 import jp.scid.bio.store.remote.RemoteSource.RemoteEntry;
 
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class RemoteSourceTest {
     RemoteSource model;
+    HttpClient httpclient;
     
     @Before
     public void setUp() throws Exception {
         model = new RemoteSource();
+    }
+    
+    @After
+    public void tearDown() throws Exception {
+        if (httpclient != null) {
+            httpclient.getConnectionManager().shutdown();
+        }
     }
 
     @Test
@@ -27,13 +38,15 @@ public class RemoteSourceTest {
 
     @Test
     public void searchIdentifiers() throws IOException {
-        List<String> result1 = model.searchIdentifiers("lung cancer", 1, 4);
+        httpclient = new DefaultHttpClient();
+        List<String> result1 = model.searchIdentifiers("lung cancer", 1, 4, httpclient);
         assertEquals(4, result1.size());
     }
     
     @Test
     public void searchEntry() throws IOException, InterruptedException {
-        List<RemoteEntry> result = model.retrieveEntry(Arrays.asList("J00231", "510145809"));
+        httpclient = new DefaultHttpClient();
+        List<RemoteEntry> result = model.retrieveEntry(Arrays.asList("J00231", "510145809"), httpclient);
         
         assertEquals(2, result.size());
         

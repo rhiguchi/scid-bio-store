@@ -46,44 +46,59 @@ public class RemoteSource {
     }
 
     private final URI togowsBaseUri = URI.create("http://togows.dbcls.jp");
+    @Deprecated
     private final HttpClient httpclient = new DefaultHttpClient();
     private int oneQueryLimit = 10;
     
     public int retrieveCount(String string) throws IOException {
         String path = getCountQueryPath(string);
-        String content = retrieveContentFromTogows(path);
+        String content;
+        
+        HttpClient client = new DefaultHttpClient();
+        try {
+            content = retrieveContentFromTogows(path, client);
+        }
+        finally {
+            client.getConnectionManager().shutdown();
+        }
         
         return perseInt(content);
     }
 
     public List<RemoteEntry> searchEntry(String query, int offset, int limit) throws IOException, InterruptedException {
-        List<String> identifiers = searchIdentifiers(query, offset, limit);
-        checkInterruption();
-        return retrieveEntry(identifiers);
+        HttpClient client = new DefaultHttpClient();
+        try {
+            List<String> identifiers = searchIdentifiers(query, offset, limit, client);
+            checkInterruption();
+            return retrieveEntry(identifiers, client);
+        }
+        finally {
+            client.getConnectionManager().shutdown();
+        }
     }
 
-    List<String> searchIdentifiers(String query, int offset, int limit) throws IOException {
+    List<String> searchIdentifiers(String query, int offset, int limit, HttpClient client) throws IOException {
         String path = getSearchQueryPath(query, offset, limit);
-        String[] identifiers = retrieveLinesFromTogows(path);
+        String[] identifiers = retrieveLinesFromTogows(path, client);
         return Arrays.asList(identifiers);
     }
     
-    List<RemoteEntry> retrieveEntry(List<String> identifiers) throws IOException, InterruptedException {
+    List<RemoteEntry> retrieveEntry(List<String> identifiers, HttpClient client) throws IOException, InterruptedException {
         if (identifiers == null || identifiers.size() == 0) {
             throw new IllegalArgumentException("identifiers must not be empty");
         }
         
         String identifiersString = join(identifiers);
-        String[] definitions = retrieveField(EntryField.DEFINITION, identifiersString);
+        String[] definitions = retrieveField(EntryField.DEFINITION, identifiersString, client);
         
         checkInterruption();
-        String[] accession = retrieveField(EntryField.ACCESSION, identifiersString);
+        String[] accession = retrieveField(EntryField.ACCESSION, identifiersString, client);
         
         checkInterruption();
-        String[] taxonomy = retrieveField(EntryField.TAXONOMY, identifiersString);
+        String[] taxonomy = retrieveField(EntryField.TAXONOMY, identifiersString, client);
         
         checkInterruption();
-        int[] length = parseInt(retrieveField(EntryField.LENGTH, identifiersString));
+        int[] length = parseInt(retrieveField(EntryField.LENGTH, identifiersString, client));
         
         List<RemoteEntry> entries = new ArrayList<RemoteEntry>(identifiers.size());
         RemoteEntryBuilder builder = new RemoteEntryBuilder();
@@ -105,10 +120,10 @@ public class RemoteSource {
         return entries;
     }
 
-    private String[] retrieveField(EntryField definition, String query)
+    private String[] retrieveField(EntryField definition, String query, HttpClient client)
             throws IOException, ClientProtocolException {
         String definitionPath = getQueryPathString(Command.ENTRY, query, definition.toString());
-        return retrieveLinesFromTogows(definitionPath);
+        return retrieveLinesFromTogows(definitionPath, client);
     }
 
 
@@ -126,21 +141,20 @@ public class RemoteSource {
         return queryUri;
     }
 
-    private String retrieveContentFromTogows(String path)
+    private String retrieveContentFromTogows(String path, HttpClient client)
             throws IOException, ClientProtocolException {
         URI queryUri = createQueryUri(path);
-        
-        return retrieve(queryUri);
+        return retrieve(queryUri, client);
     }
 
-    private String[] retrieveLinesFromTogows(String path) throws IOException, ClientProtocolException {
-        return retrieveContentFromTogows(path).split("\n");
+    private String[] retrieveLinesFromTogows(String path, HttpClient client) throws IOException, ClientProtocolException {
+        return retrieveContentFromTogows(path, client).split("\n");
     }
     
-    private String retrieve(URI resource) throws IOException, ClientProtocolException {
+    private String retrieve(URI resource, HttpClient client) throws IOException, ClientProtocolException {
         HttpGet request = new HttpGet(resource);
         logger.fine(request.getMethod() + ": " + request.getURI());
-        HttpResponse response = httpclient.execute(request);
+        HttpResponse response = client.execute(request);
         HttpEntity entity = response.getEntity();
         String content = EntityUtils.toString(entity);
         EntityUtils.consume(entity);
@@ -357,11 +371,11 @@ public class RemoteSource {
 
         @Override
         public List<RemoteEntry> call() throws Exception {
-            List<String> identifiers = searchIdentifiers(query, offset, limit);
+            List<String> identifiers = searchIdentifiers(query, offset, limit, httpclient);
             if (Thread.currentThread().isInterrupted()) {
                 throw new InterruptedException("page");
             }
-            return retrieveEntry(identifiers);
+            return retrieveEntry(identifiers, httpclient);
         }
     }
     
