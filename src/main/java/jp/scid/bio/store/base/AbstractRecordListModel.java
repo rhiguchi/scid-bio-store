@@ -9,8 +9,11 @@ import org.jooq.Table;
 
 public abstract class AbstractRecordListModel<E extends RecordModel>
         extends PersistentListModel<E> implements ListModel {
+    @SuppressWarnings("unused")
     private final static Table<?> INFORMATION_SCHEMA_TABLES = tableByName("INFORMATION_SCHEMA", "TABLES");
+    @SuppressWarnings("unused")
     private final static Field<Long> LAST_MODIFICATION = fieldByName(Long.class, "LAST_MODIFICATION");
+    @SuppressWarnings("unused")
     private final static Field<String> TABLE_NAME = fieldByName(String.class, "TABLE_NAME");
 
     public AbstractRecordListModel() {

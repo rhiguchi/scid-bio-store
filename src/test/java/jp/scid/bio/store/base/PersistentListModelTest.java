@@ -1,7 +1,6 @@
 package jp.scid.bio.store.base;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
