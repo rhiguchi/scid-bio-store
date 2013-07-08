@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
 
+import javax.swing.event.ChangeListener;
+
+import jp.scid.bio.store.SequenceLibrary.ChangeEventSupport;
 import jp.scid.bio.store.base.AbstractRecordListModel;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
 import jp.scid.bio.store.sequence.FolderContentGeneticSequence;
@@ -12,15 +15,37 @@ import jp.scid.bio.store.sequence.GeneticSequence;
 
 public class FolderRecordGroupFolder extends AbstractFolder implements FoldersContainer {
     private final GroupFolderChildren childFolders;
+    private final ChangeEventSupport folrdersChangeSupport;
     
     public FolderRecordGroupFolder(FolderRecord record, Source source) {
         super(record, source);
         
         childFolders = new GroupFolderChildren();
+        folrdersChangeSupport = new ChangeEventSupport(this);
     }
 
+    @Override
+    public void addFoldersChangeListener(ChangeListener listener) {
+        folrdersChangeSupport.addChangeListener(listener);
+    }
+    
+    @Override
+    public void removeFoldersChangeListener(ChangeListener listener) {
+        folrdersChangeSupport.removeChangeListener(listener);
+    }
+    
+    @Override
+    public Iterable<Folder> getFolders() {
+        return source.retrieveFolderChildren(this, id());
+    }
+    
+    public Folder createChildFolder(CollectionType type) {
+        return source.createFolder(type, id(), this);
+    }
+    
     public Folder createContentFolder(CollectionType type) {
         Folder folder = source.createFolder(type, id(), this);
+        folder.save();
         childFolders.add(folder);
         return folder;
     }
@@ -31,11 +56,21 @@ public class FolderRecordGroupFolder extends AbstractFolder implements FoldersCo
     }
     
     public boolean removeContentFolder(Folder folder) {
-        return childFolders.removeElement(folder);
+        try {
+            return childFolders.removeElement(folder);
+        }
+        finally {
+            folrdersChangeSupport.fireStateChange();
+        }
     }
     
     public void addContentFolder(Folder folder) {
-        childFolders.addElement(folder);
+        try {
+            childFolders.addElement(folder);
+        }
+        finally {
+            folrdersChangeSupport.fireStateChange();
+        }
     }
 
     @Override

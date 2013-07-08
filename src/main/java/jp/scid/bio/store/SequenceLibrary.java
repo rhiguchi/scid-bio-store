@@ -35,7 +35,6 @@ import jp.scid.bio.store.sequence.GeneticSequenceRecordMapper;
 import jp.scid.bio.store.sequence.GeneticSequenceSource;
 import jp.scid.bio.store.sequence.JooqGeneticSequence;
 import jp.scid.bio.store.sequence.LibrarySequenceCollection;
-import jp.scid.bio.store.sequence.SequenceCollection;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.HiddenFileFilter;
@@ -49,7 +48,7 @@ public class SequenceLibrary implements GeneticSequenceSource {
     private final static Field<String> tableNameField = Factory.field("table_name", String.class);
     private final static Field<String> tableSchemaField = Factory.field("table_schema", String.class);
     
-    private final List<ChangeListener> sequenceChangeListeners = new ArrayList<ChangeListener>(2);
+    private final ChangeEventSupport sequenceChangeSupport;
     
     private final Factory create;
     
@@ -71,6 +70,8 @@ public class SequenceLibrary implements GeneticSequenceSource {
         allSequences = new LibrarySequenceCollection(sequences, factory);
         
         usersFolderRoot = new UserFoldersRoot();
+        
+        sequenceChangeSupport = new ChangeEventSupport(this);
     }
     
     public static SequenceLibrary create(Connection connection) {
@@ -90,20 +91,40 @@ public class SequenceLibrary implements GeneticSequenceSource {
     }
 
     public void addSequencesChangeListener(ChangeListener listener) {
-        sequenceChangeListeners.add(listener);
+        sequenceChangeSupport.addChangeListener(listener);
     }
     
     public void removeSequencesChangeListener(ChangeListener listener) {
-        sequenceChangeListeners.remove(listener);
+        sequenceChangeSupport.removeChangeListener(listener);
     }
     
-    protected void fireSequencesChange() {
-        if (sequenceChangeListeners.isEmpty()) {
-            return;
+    public static class ChangeEventSupport {
+        private final List<ChangeListener> sequenceChangeListeners;
+
+        private final Object source;
+
+        public ChangeEventSupport(Object source) {
+            if (source == null) throw new IllegalArgumentException("source must not be null");
+            this.source = source;
+            sequenceChangeListeners = new ArrayList<ChangeListener>();
         }
-        ChangeEvent e = new ChangeEvent(this);
-        for (ChangeListener l: sequenceChangeListeners) {
-            l.stateChanged(e);
+
+        public void addChangeListener(ChangeListener listener) {
+            sequenceChangeListeners.add(listener);
+        }
+        
+        public void removeChangeListener(ChangeListener listener) {
+            sequenceChangeListeners.remove(listener);
+        }
+        
+        public void fireStateChange() {
+            if (sequenceChangeListeners.isEmpty()) {
+                return;
+            }
+            ChangeEvent e = new ChangeEvent(source);
+            for (ChangeListener l: sequenceChangeListeners) {
+                l.stateChanged(e);
+            }
         }
     }
     
@@ -256,9 +277,31 @@ public class SequenceLibrary implements GeneticSequenceSource {
     
     class UserFoldersRoot implements FoldersContainer {
         private final RootFolderList rootFolderList;
+        private final ChangeEventSupport folrdersChangeSupport;
         
         UserFoldersRoot() {
             rootFolderList = new RootFolderList();
+            folrdersChangeSupport = new ChangeEventSupport(this);
+        }
+        
+        @Override
+        public void addFoldersChangeListener(ChangeListener listener) {
+            folrdersChangeSupport.addChangeListener(listener);
+        }
+        
+        @Override
+        public void removeFoldersChangeListener(ChangeListener listener) {
+            folrdersChangeSupport.removeChangeListener(listener);
+        }
+        
+        @Override
+        public Iterable<Folder> getFolders() {
+            return folderSource.retrieveRootFolders(usersFolderRoot);
+        }
+        
+        @Override
+        public Folder createChildFolder(CollectionType type) {
+            return folderSource.createFolder(type, null, this);
         }
         
         @Override
@@ -268,9 +311,7 @@ public class SequenceLibrary implements GeneticSequenceSource {
 
         @Override
         public Folder createContentFolder(CollectionType type) {
-            Folder folder = folderSource.createFolder(type, null, this);
-            rootFolderList.add(folder);
-            return folder;
+            return folderSource.createFolder(type, null, this);
         }
 
         @Override
@@ -285,12 +326,22 @@ public class SequenceLibrary implements GeneticSequenceSource {
 
         @Override
         public boolean removeContentFolder(Folder folder) {
-            return rootFolderList.removeElement(folder);
+            try {
+                return rootFolderList.removeElement(folder);
+            }
+            finally {
+                folrdersChangeSupport.fireStateChange();
+            }
         }
 
         @Override
         public void addContentFolder(Folder folder) {
-            rootFolderList.add(folder);
+            try {
+                rootFolderList.add(folder);
+            }
+            finally {
+                folrdersChangeSupport.fireStateChange();
+            }
         }
         
         @Override

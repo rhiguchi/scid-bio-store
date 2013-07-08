@@ -45,9 +45,7 @@ public class JooqFolderSource implements Source {
         folderRecord.setType(type.getDbValue());
         folderRecord.setParentId(parentFolderId);
         
-        Folder folder = new RootFolderMapper(this, parent).map(folderRecord);
-        folder.save();
-        return folder;
+        return new RootFolderMapper(this, parent).map(folderRecord);
     }
     
     protected String getNewFolderName(CollectionType type) {

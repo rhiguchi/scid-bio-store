@@ -19,6 +19,13 @@ public interface Folder extends RecordModel, GeneticSequenceSource {
     FoldersContainer getParent();
     
     /**
+     * 親フォルダを設定します。
+     * 
+     * @param newParent null ではない新しい親
+     */
+    void setParent(FoldersContainer newParent);
+    
+    /**
      * このフォルダの名前を設定します。
      * 
      * @param newName 新しい名前
