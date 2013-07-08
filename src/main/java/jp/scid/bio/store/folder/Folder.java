@@ -1,15 +1,17 @@
 package jp.scid.bio.store.folder;
 
+import java.util.List;
+
 import jp.scid.bio.store.base.RecordModel;
 import jp.scid.bio.store.sequence.FolderContentGeneticSequence;
-import jp.scid.bio.store.sequence.SequenceCollection;
+import jp.scid.bio.store.sequence.GeneticSequenceSource;
 
 /**
  * シーケンスデータを格納したフォルダの構造定義
  * @author higuchi
  *
  */
-public interface Folder extends RecordModel {
+public interface Folder extends RecordModel, GeneticSequenceSource {
     /**
      * 親フォルダを返します。
      * @return 親フォルダ。ルートフォルダで親がいないときは {@code null} 。
@@ -33,5 +35,6 @@ public interface Folder extends RecordModel {
      * 
      * @return 配列情報
      */
-    SequenceCollection<FolderContentGeneticSequence> getContentSequences();
+    List<FolderContentGeneticSequence> getGeneticSequences();
+
 }

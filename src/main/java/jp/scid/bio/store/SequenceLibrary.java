@@ -11,10 +11,14 @@ import java.io.Reader;
 import java.nio.CharBuffer;
 import java.sql.Connection;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import jp.scid.bio.store.base.AbstractRecordListModel;
 import jp.scid.bio.store.folder.CollectionType;
@@ -28,6 +32,7 @@ import jp.scid.bio.store.jooq.tables.records.GeneticSequenceRecord;
 import jp.scid.bio.store.sequence.FileLibrary;
 import jp.scid.bio.store.sequence.GeneticSequence;
 import jp.scid.bio.store.sequence.GeneticSequenceRecordMapper;
+import jp.scid.bio.store.sequence.GeneticSequenceSource;
 import jp.scid.bio.store.sequence.JooqGeneticSequence;
 import jp.scid.bio.store.sequence.LibrarySequenceCollection;
 import jp.scid.bio.store.sequence.SequenceCollection;
@@ -40,9 +45,11 @@ import org.jooq.exception.DataAccessException;
 import org.jooq.impl.Factory;
 import org.jooq.util.h2.H2Factory;
 
-public class SequenceLibrary {
+public class SequenceLibrary implements GeneticSequenceSource {
     private final static Field<String> tableNameField = Factory.field("table_name", String.class);
     private final static Field<String> tableSchemaField = Factory.field("table_schema", String.class);
+    
+    private final List<ChangeListener> sequenceChangeListeners = new ArrayList<ChangeListener>(2);
     
     private final Factory create;
     
@@ -78,13 +85,26 @@ public class SequenceLibrary {
     }
     
     // Sequences
-    public SequenceCollection<GeneticSequence> getAllSequences() {
-        return allSequences;
+    public List<? extends GeneticSequence> getGeneticSequences() {
+        return fetch();
+    }
+
+    public void addSequencesChangeListener(ChangeListener listener) {
+        sequenceChangeListeners.add(listener);
     }
     
-    public SequenceCollection<GeneticSequence> fetchSequences() {
-        allSequences.fetch();
-        return allSequences;
+    public void removeSequencesChangeListener(ChangeListener listener) {
+        sequenceChangeListeners.remove(listener);
+    }
+    
+    protected void fireSequencesChange() {
+        if (sequenceChangeListeners.isEmpty()) {
+            return;
+        }
+        ChangeEvent e = new ChangeEvent(this);
+        for (ChangeListener l: sequenceChangeListeners) {
+            l.stateChanged(e);
+        }
     }
     
     public List<GeneticSequence> fetch() {
