@@ -1,7 +1,5 @@
 package jp.scid.bio.store.sequence;
 
-import java.util.List;
-
 import javax.swing.event.ChangeListener;
 
 /**
@@ -15,7 +13,7 @@ public interface GeneticSequenceSource {
      * 
      * @return 配列情報のリスト
      */
-    List<? extends GeneticSequence> getGeneticSequences();
+    Iterable<? extends GeneticSequence> getGeneticSequences();
     
     void addSequencesChangeListener(ChangeListener listener);
     

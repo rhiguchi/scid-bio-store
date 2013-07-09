@@ -1,15 +1,15 @@
 package jp.scid.bio.store.folder;
 
-import jp.scid.bio.store.folder.FolderRecordGroupFolder.Source;
+import jp.scid.bio.store.folder.AbstractFolder.Source;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
 
 public class FolderBuilder {
-    private final Source folderSource;
+    private final AbstractFolder.Source folderSource;
     private CollectionType collectionType;
     private FolderRecord record;
     private FoldersContainer owner;
     
-    public FolderBuilder(Source folderSource) {
+    public FolderBuilder(AbstractFolder.Source folderSource) {
         if (folderSource == null)
             throw new IllegalArgumentException("folderSource must not be null");
         

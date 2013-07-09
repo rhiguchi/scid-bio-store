@@ -10,21 +10,13 @@ import javax.swing.event.ChangeListener;
  */
 public interface FoldersContainer {
     /**
-     * 子フォルダのリストモデルを返します
-     * 
-     * @return 子フォルダのリスト
-     */
-    @Deprecated
-    FolderList getContentFolders();
-    
-    /**
      * 子フォルダを追加します
      * 
      * @param type フォルダの型
      * @return 追加されたフォルダ
      */
-    @Deprecated
-    Folder createContentFolder(CollectionType type);
+//    @Deprecated
+//    Folder createContentFolder(CollectionType type);
     
     /**
      * 子フォルダを削除します
@@ -32,21 +24,21 @@ public interface FoldersContainer {
      * @param index フォルダの順序
      * @return 削除されたフォルダ
      */
-    @Deprecated
-    Folder removeContentFolderAt(int index);
+//    @Deprecated
+//    Folder removeContentFolderAt(int index);
+//    
+//    @Deprecated
+//    int indexOfFolder(Folder folder);
+//    
+    boolean removeChildFolder(Folder folder);
     
-    @Deprecated
-    int indexOfFolder(Folder folder);
-    
-    boolean removeContentFolder(Folder folder);
-    
-    void addContentFolder(Folder folder);
+    void addChildFolder(Folder folder);
     
     /**
      * 子フォルダを返します
      * @return 子フォルダ
      */
-    Iterable<Folder> getFolders();
+    Iterable<Folder> getChildFolders();
 
     void addFoldersChangeListener(ChangeListener listener);
     

@@ -11,7 +11,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
-import jp.scid.bio.store.folder.FolderRecordGroupFolder.Source;
 import jp.scid.bio.store.jooq.Tables;
 import jp.scid.bio.store.jooq.tables.records.CollectionItemRecord;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
@@ -26,7 +25,7 @@ import org.jooq.RecordMapper;
 import org.jooq.Result;
 import org.jooq.impl.Factory;
 
-public class JooqFolderSource implements Source {
+public class JooqFolderSource implements AbstractFolder.Source {
     private final Factory create;
     private final JooqGeneticSequence.Source geneticSequenceSource;
     
@@ -53,7 +52,11 @@ public class JooqFolderSource implements Source {
     }
 
     @Override
-    public List<Folder> retrieveFolderChildren(FoldersContainer parent, long parentFolderId) {
+    public List<Folder> retrieveFolderChildren(FoldersContainer parent, Long parentFolderId) {
+        if (parentFolderId == null) {
+            return retrieveRootFolders(parent);
+        }
+        
         RootFolderMapper mapper = new RootFolderMapper(this, parent);
         
         Result<FolderRecord> result = create.selectFrom(Tables.FOLDER)
@@ -180,7 +183,7 @@ public class JooqFolderSource implements Source {
     static class RootFolderMapper implements RecordMapper<FolderRecord, Folder> {
         private final FolderBuilder builder;
         
-        public RootFolderMapper(Source source, FoldersContainer parent) {
+        public RootFolderMapper(AbstractFolder.Source source, FoldersContainer parent) {
             if (source == null) throw new IllegalArgumentException("source must not be null");
             if (parent == null) throw new IllegalArgumentException("parent must not be null");
             

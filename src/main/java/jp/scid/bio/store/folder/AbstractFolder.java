@@ -1,30 +1,29 @@
 package jp.scid.bio.store.folder;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.List;
 
 import javax.swing.event.ChangeListener;
 
 import jp.scid.bio.store.SequenceLibrary.ChangeEventSupport;
 import jp.scid.bio.store.base.AbstractRecordModel;
-import jp.scid.bio.store.base.PersistentListModel;
-import jp.scid.bio.store.folder.FolderRecordGroupFolder.Source;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
 import jp.scid.bio.store.sequence.FolderContentGeneticSequence;
-import jp.scid.bio.store.sequence.SequenceCollection;
+import jp.scid.bio.store.sequence.GeneticSequence;
 
 public abstract class AbstractFolder extends AbstractRecordModel<FolderRecord> implements Folder {
-    final Source source;
-    final FolderSequenceCollection sequences;
+    final AbstractFolder.Source source;
     private FoldersContainer parent;
     private final ChangeEventSupport sequencesChangeSupport;
     
-    AbstractFolder(FolderRecord record, Source source) {
+    AbstractFolder(FolderRecord record, AbstractFolder.Source source) {
         super(record);
         
         if (source == null) throw new IllegalArgumentException("source must not be null");
         this.source = source;
         
-        sequences = new FolderSequenceCollection();
         sequencesChangeSupport = new ChangeEventSupport(this);
     }
     
@@ -34,12 +33,11 @@ public abstract class AbstractFolder extends AbstractRecordModel<FolderRecord> i
     
     public void setParent(FoldersContainer newParent) {
         if (newParent == null) throw new IllegalArgumentException("newParent must not be null");
+        // TODO ancester check
         
-        parent.removeContentFolder(this);
-        newParent.addContentFolder(this);
-
         Long newParentId = newParent instanceof Folder ? ((Folder) newParent).id() : null;
         record.setParentId(newParentId);
+        save();
         
         firePropertyChange("parent", this.parent, this.parent = newParent);
     }
@@ -66,8 +64,7 @@ public abstract class AbstractFolder extends AbstractRecordModel<FolderRecord> i
     
     @Override
     public void deleteFromParent() {
-        parent.removeContentFolder(this);
-        delete();
+        parent.removeChildFolder(this);
     }
     
     @Override
@@ -92,16 +89,15 @@ public abstract class AbstractFolder extends AbstractRecordModel<FolderRecord> i
         sequencesChangeSupport.fireStateChange();
     }
     
-    class FolderSequenceCollection extends PersistentListModel<FolderContentGeneticSequence>
-            implements SequenceCollection<FolderContentGeneticSequence> {
-        @Override
-        protected Long getId(FolderContentGeneticSequence element) {
-            return element.id();
-        }
+    public static interface Source {
+        FolderContentGeneticSequence createFolderContent(GeneticSequence sequence, Folder folder);
         
-        @Override
-        protected List<FolderContentGeneticSequence> retrieve() {
-            return source.retrieveFolderContents(id());
-        }
+        GeneticSequence createGeneticSequence(File file) throws IOException, ParseException;
+        
+        Folder createFolder(CollectionType type, Long parentFolderId, FoldersContainer parent);
+        
+        List<Folder> retrieveFolderChildren(FoldersContainer parent, Long parentFolderId);
+        
+        List<FolderContentGeneticSequence> retrieveFolderContents(long folderId);
     }
 }

@@ -1,6 +1,6 @@
 package jp.scid.bio.store.folder;
 
-import jp.scid.bio.store.folder.FolderRecordGroupFolder.Source;
+import jp.scid.bio.store.folder.AbstractFolder.Source;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
 
 import org.jooq.Converter;
@@ -9,19 +9,19 @@ import org.jooq.impl.EnumConverter;
 public enum CollectionType {
     NODE() {
         @Override
-        public AbstractFolder createFolder(FolderRecord record, Source folderSource) {
+        public AbstractFolder createFolder(FolderRecord record, AbstractFolder.Source folderSource) {
             return new FolderRecordGroupFolder(record, folderSource);
         }
     },
     BASIC() {
         @Override
-        public AbstractFolder createFolder(FolderRecord record, Source folderSource) {
+        public AbstractFolder createFolder(FolderRecord record, AbstractFolder.Source folderSource) {
             return new FolderRecordBasicFolder(record, folderSource);
         }
     },
     FILTER() {
         @Override
-        public AbstractFolder createFolder(FolderRecord record, Source folderSource) {
+        public AbstractFolder createFolder(FolderRecord record, AbstractFolder.Source folderSource) {
             return new FolderRecordFilterFolder(record, folderSource);
         }
     };
@@ -44,11 +44,11 @@ public enum CollectionType {
         return (short) this.ordinal();
     }
     
-    public Folder createSequenceCollection(FolderRecord record, Source folderSource) {
+    public Folder createSequenceCollection(FolderRecord record, AbstractFolder.Source folderSource) {
         record.setType(getDbValue());
         Folder folder = createFolder(record, folderSource);
         return folder;
     }
     
-    abstract AbstractFolder createFolder(FolderRecord record, Source folderSource);
+    abstract AbstractFolder createFolder(FolderRecord record, AbstractFolder.Source folderSource);
 }

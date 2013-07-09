@@ -1,9 +1,6 @@
 package jp.scid.bio.store.folder;
 
-import java.util.List;
-
 import jp.scid.bio.store.base.RecordModel;
-import jp.scid.bio.store.sequence.FolderContentGeneticSequence;
 import jp.scid.bio.store.sequence.GeneticSequenceSource;
 
 /**
@@ -34,14 +31,8 @@ public interface Folder extends RecordModel, GeneticSequenceSource {
 
     /**
      * 親からこのフォルダを除去します。
+     * 
+     * 親から変化イベントが発行されます
      */
     void deleteFromParent();
-    
-    /**
-     * このフォルダにある配列情報を返します。
-     * 
-     * @return 配列情報
-     */
-    List<FolderContentGeneticSequence> getGeneticSequences();
-
 }

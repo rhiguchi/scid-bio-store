@@ -20,10 +20,9 @@ import java.util.concurrent.Callable;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import jp.scid.bio.store.base.AbstractRecordListModel;
+import jp.scid.bio.store.folder.AbstractFolder;
 import jp.scid.bio.store.folder.CollectionType;
 import jp.scid.bio.store.folder.Folder;
-import jp.scid.bio.store.folder.FolderList;
 import jp.scid.bio.store.folder.FoldersContainer;
 import jp.scid.bio.store.folder.JooqFolderSource;
 import jp.scid.bio.store.jooq.Tables;
@@ -33,6 +32,7 @@ import jp.scid.bio.store.sequence.FileLibrary;
 import jp.scid.bio.store.sequence.GeneticSequence;
 import jp.scid.bio.store.sequence.GeneticSequenceRecordMapper;
 import jp.scid.bio.store.sequence.GeneticSequenceSource;
+import jp.scid.bio.store.sequence.ImportableSequenceSource;
 import jp.scid.bio.store.sequence.JooqGeneticSequence;
 import jp.scid.bio.store.sequence.LibrarySequenceCollection;
 
@@ -44,7 +44,7 @@ import org.jooq.exception.DataAccessException;
 import org.jooq.impl.Factory;
 import org.jooq.util.h2.H2Factory;
 
-public class SequenceLibrary implements GeneticSequenceSource {
+public class SequenceLibrary implements GeneticSequenceSource, ImportableSequenceSource {
     private final static Field<String> tableNameField = Factory.field("table_name", String.class);
     private final static Field<String> tableSchemaField = Factory.field("table_schema", String.class);
     
@@ -69,7 +69,7 @@ public class SequenceLibrary implements GeneticSequenceSource {
         
         allSequences = new LibrarySequenceCollection(sequences, factory);
         
-        usersFolderRoot = new UserFoldersRoot();
+        usersFolderRoot = new UserFoldersRoot(folderSource);
         
         sequenceChangeSupport = new ChangeEventSupport(this);
     }
@@ -87,7 +87,7 @@ public class SequenceLibrary implements GeneticSequenceSource {
     
     // Sequences
     public List<? extends GeneticSequence> getGeneticSequences() {
-        return fetch();
+        return retrieve();
     }
 
     public void addSequencesChangeListener(ChangeListener listener) {
@@ -128,7 +128,7 @@ public class SequenceLibrary implements GeneticSequenceSource {
         }
     }
     
-    public List<GeneticSequence> fetch() {
+    private List<GeneticSequence> retrieve() {
         Result<GeneticSequenceRecord> result = create.selectFrom(Tables.GENETIC_SEQUENCE)
                 .orderBy(Tables.GENETIC_SEQUENCE.ID)
                 .fetch();
@@ -138,13 +138,24 @@ public class SequenceLibrary implements GeneticSequenceSource {
     public GeneticSequence importSequence(File file) throws IOException, ParseException {
         JooqGeneticSequence sequence = createGeneticSequence();
         sequence.setFileUri(file);
-        
         sequence.reload();
         sequence.save();
         
-        allSequences.add(sequence);
-        
+        sequenceChangeSupport.fireStateChange();
         return sequence;
+    }
+    
+    public boolean deleteSequence(GeneticSequence sequence, boolean withFile) {
+        if (withFile && sequence.getFile() != null) {
+            sequence.getFile().delete();
+        }
+        
+        try {
+            return sequence.delete();
+        }
+        finally {
+            sequenceChangeSupport.fireStateChange();
+        }
     }
     
     public Callable<GeneticSequence> createSequenceImportTask(File file) {
@@ -178,22 +189,13 @@ public class SequenceLibrary implements GeneticSequenceSource {
         GeneticSequenceRecord sequenceRecord = create.newRecord(Tables.GENETIC_SEQUENCE);
         sequenceRecord.setName("Untitiled");
         
-        JooqGeneticSequence sequence = new JooqGeneticSequence(sequenceRecord, sequences);
-        return sequence;
+        return new JooqGeneticSequence(sequenceRecord, sequences);
     }
 
     public void setFilesStoreRoot(File filesStoreDirectory) {
         sequences.setSequenceFilesRoot(filesStoreDirectory);
     }
     
-    public GeneticSequence deleteSequenceAt(int index) {
-        GeneticSequence sequence = allSequences.removeElementAt(index);
-        // TODO delete file
-        sequence.delete();
-        
-        return sequence;
-    }
-
     // Folders
     public UserFoldersRoot getUsersFolderRoot() {
         return usersFolderRoot;
@@ -275,12 +277,36 @@ public class SequenceLibrary implements GeneticSequenceSource {
         return sql.toString();
     }
     
-    class UserFoldersRoot implements FoldersContainer {
-        private final RootFolderList rootFolderList;
+    abstract static class AbstractRootFolder implements FoldersContainer {
+        private final ChangeEventSupport folrdersChangeSupport;
+        AbstractFolder.Source source;
+        
+        protected AbstractRootFolder() {
+            folrdersChangeSupport = new ChangeEventSupport(this);
+        }
+
+        @Override
+        public Folder createChildFolder(CollectionType type) {
+            return source.createFolder(type, null, this);
+        }
+        
+        @Override
+        public void addFoldersChangeListener(ChangeListener listener) {
+            folrdersChangeSupport.addChangeListener(listener);
+        }
+        
+        @Override
+        public void removeFoldersChangeListener(ChangeListener listener) {
+            folrdersChangeSupport.removeChangeListener(listener);
+        }
+    }
+    
+    static class UserFoldersRoot implements FoldersContainer {
+        private final AbstractFolder.Source folderSource;
         private final ChangeEventSupport folrdersChangeSupport;
         
-        UserFoldersRoot() {
-            rootFolderList = new RootFolderList();
+        public UserFoldersRoot(AbstractFolder.Source folderSource) {
+            this.folderSource = folderSource;
             folrdersChangeSupport = new ChangeEventSupport(this);
         }
         
@@ -295,8 +321,8 @@ public class SequenceLibrary implements GeneticSequenceSource {
         }
         
         @Override
-        public Iterable<Folder> getFolders() {
-            return folderSource.retrieveRootFolders(usersFolderRoot);
+        public Iterable<Folder> getChildFolders() {
+            return folderSource.retrieveFolderChildren(this, null);
         }
         
         @Override
@@ -305,56 +331,28 @@ public class SequenceLibrary implements GeneticSequenceSource {
         }
         
         @Override
-        public FolderList getContentFolders() {
-            return rootFolderList;
-        }
-
-        @Override
-        public Folder createContentFolder(CollectionType type) {
-            return folderSource.createFolder(type, null, this);
-        }
-
-        @Override
-        public Folder removeContentFolderAt(int index) {
-            return rootFolderList.removeElementAt(index);
-        }
-        
-        @Override
-        public int indexOfFolder(Folder folder) {
-            return rootFolderList.indexOf(folder);
-        }
-
-        @Override
-        public boolean removeContentFolder(Folder folder) {
-            try {
-                return rootFolderList.removeElement(folder);
+        public boolean removeChildFolder(Folder folder) {
+            if (this.equals(folder.getParent())) {
+                return false;
             }
-            finally {
+            
+            boolean result = folder.delete();
+            if (result) {
                 folrdersChangeSupport.fireStateChange();
             }
+            
+            return result;
         }
 
         @Override
-        public void addContentFolder(Folder folder) {
-            try {
-                rootFolderList.add(folder);
-            }
-            finally {
-                folrdersChangeSupport.fireStateChange();
-            }
+        public void addChildFolder(Folder folder) {
+            folder.setParent(this);
+            folrdersChangeSupport.fireStateChange();
         }
         
         @Override
         public String toString() {
             return "User Collections";
-        }
-    }
-
-    // Contents
-    private class RootFolderList extends AbstractRecordListModel<Folder> implements FolderList {
-        @Override
-        protected List<Folder> retrieve() {
-            return folderSource.retrieveRootFolders(usersFolderRoot);
         }
     }
 }
