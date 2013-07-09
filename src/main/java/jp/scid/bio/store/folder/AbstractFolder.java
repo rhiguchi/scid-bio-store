@@ -7,8 +7,8 @@ import java.util.List;
 
 import javax.swing.event.ChangeListener;
 
-import jp.scid.bio.store.SequenceLibrary.ChangeEventSupport;
 import jp.scid.bio.store.base.AbstractRecordModel;
+import jp.scid.bio.store.base.ChangeEventSupport;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
 import jp.scid.bio.store.sequence.FolderContentGeneticSequence;
 import jp.scid.bio.store.sequence.GeneticSequence;

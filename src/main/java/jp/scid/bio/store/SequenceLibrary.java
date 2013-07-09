@@ -11,19 +11,15 @@ import java.io.Reader;
 import java.nio.CharBuffer;
 import java.sql.Connection;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import jp.scid.bio.store.folder.AbstractFolder;
-import jp.scid.bio.store.folder.CollectionType;
-import jp.scid.bio.store.folder.Folder;
-import jp.scid.bio.store.folder.FoldersContainer;
+import jp.scid.bio.store.base.ChangeEventSupport;
+import jp.scid.bio.store.folder.FoldersRoot;
 import jp.scid.bio.store.folder.JooqFolderSource;
 import jp.scid.bio.store.jooq.Tables;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
@@ -52,7 +48,7 @@ public class SequenceLibrary implements GeneticSequenceSource, ImportableSequenc
     
     private final Factory create;
     
-    private final UserFoldersRoot usersFolderRoot;
+    private final FoldersRoot usersFolderRoot;
     
     private final LibrarySequenceCollection allSequences;
     
@@ -69,7 +65,7 @@ public class SequenceLibrary implements GeneticSequenceSource, ImportableSequenc
         
         allSequences = new LibrarySequenceCollection(sequences, factory);
         
-        usersFolderRoot = new UserFoldersRoot(folderSource);
+        usersFolderRoot = new FoldersRoot(folderSource);
         
         sequenceChangeSupport = new ChangeEventSupport(this);
     }
@@ -86,7 +82,7 @@ public class SequenceLibrary implements GeneticSequenceSource, ImportableSequenc
     }
     
     // Sequences
-    public List<? extends GeneticSequence> getGeneticSequences() {
+    public List<GeneticSequence> getGeneticSequences() {
         return retrieve();
     }
 
@@ -96,36 +92,6 @@ public class SequenceLibrary implements GeneticSequenceSource, ImportableSequenc
     
     public void removeSequencesChangeListener(ChangeListener listener) {
         sequenceChangeSupport.removeChangeListener(listener);
-    }
-    
-    public static class ChangeEventSupport {
-        private final List<ChangeListener> sequenceChangeListeners;
-
-        private final Object source;
-
-        public ChangeEventSupport(Object source) {
-            if (source == null) throw new IllegalArgumentException("source must not be null");
-            this.source = source;
-            sequenceChangeListeners = new ArrayList<ChangeListener>();
-        }
-
-        public void addChangeListener(ChangeListener listener) {
-            sequenceChangeListeners.add(listener);
-        }
-        
-        public void removeChangeListener(ChangeListener listener) {
-            sequenceChangeListeners.remove(listener);
-        }
-        
-        public void fireStateChange() {
-            if (sequenceChangeListeners.isEmpty()) {
-                return;
-            }
-            ChangeEvent e = new ChangeEvent(source);
-            for (ChangeListener l: sequenceChangeListeners) {
-                l.stateChanged(e);
-            }
-        }
     }
     
     private List<GeneticSequence> retrieve() {
@@ -197,7 +163,7 @@ public class SequenceLibrary implements GeneticSequenceSource, ImportableSequenc
     }
     
     // Folders
-    public UserFoldersRoot getUsersFolderRoot() {
+    public FoldersRoot getUsersFolderRoot() {
         return usersFolderRoot;
     }
     
@@ -226,7 +192,7 @@ public class SequenceLibrary implements GeneticSequenceSource, ImportableSequenc
         return tableNames;
     }
 
-    private void setUpSchema() {
+    void setUpSchema() {
         // build schema tables
         String sql;
         try {
@@ -275,85 +241,6 @@ public class SequenceLibrary implements GeneticSequenceSource, ImportableSequenc
         }
         
         return sql.toString();
-    }
-    
-    abstract static class AbstractRootFolder implements FoldersContainer {
-        private final ChangeEventSupport folrdersChangeSupport;
-        AbstractFolder.Source source;
-        
-        protected AbstractRootFolder() {
-            folrdersChangeSupport = new ChangeEventSupport(this);
-        }
-
-        @Override
-        public Folder createChildFolder(CollectionType type) {
-            return source.createFolder(type, null, this);
-        }
-        
-        @Override
-        public void addFoldersChangeListener(ChangeListener listener) {
-            folrdersChangeSupport.addChangeListener(listener);
-        }
-        
-        @Override
-        public void removeFoldersChangeListener(ChangeListener listener) {
-            folrdersChangeSupport.removeChangeListener(listener);
-        }
-    }
-    
-    static class UserFoldersRoot implements FoldersContainer {
-        private final AbstractFolder.Source folderSource;
-        private final ChangeEventSupport folrdersChangeSupport;
-        
-        public UserFoldersRoot(AbstractFolder.Source folderSource) {
-            this.folderSource = folderSource;
-            folrdersChangeSupport = new ChangeEventSupport(this);
-        }
-        
-        @Override
-        public void addFoldersChangeListener(ChangeListener listener) {
-            folrdersChangeSupport.addChangeListener(listener);
-        }
-        
-        @Override
-        public void removeFoldersChangeListener(ChangeListener listener) {
-            folrdersChangeSupport.removeChangeListener(listener);
-        }
-        
-        @Override
-        public Iterable<Folder> getChildFolders() {
-            return folderSource.retrieveFolderChildren(this, null);
-        }
-        
-        @Override
-        public Folder createChildFolder(CollectionType type) {
-            return folderSource.createFolder(type, null, this);
-        }
-        
-        @Override
-        public boolean removeChildFolder(Folder folder) {
-            if (this.equals(folder.getParent())) {
-                return false;
-            }
-            
-            boolean result = folder.delete();
-            if (result) {
-                folrdersChangeSupport.fireStateChange();
-            }
-            
-            return result;
-        }
-
-        @Override
-        public void addChildFolder(Folder folder) {
-            folder.setParent(this);
-            folrdersChangeSupport.fireStateChange();
-        }
-        
-        @Override
-        public String toString() {
-            return "User Collections";
-        }
     }
 }
 

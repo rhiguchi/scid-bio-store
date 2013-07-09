@@ -10,28 +10,18 @@ import javax.swing.event.ChangeListener;
  */
 public interface FoldersContainer {
     /**
-     * 子フォルダを追加します
+     * 子フォルダを削除します。
      * 
-     * @param type フォルダの型
-     * @return 追加されたフォルダ
+     * @param folder 削除するフォルダ。
+     * @return フォルダがこのコンテナの持つフォルダで、削除ができたら true 。
      */
-//    @Deprecated
-//    Folder createContentFolder(CollectionType type);
-    
-    /**
-     * 子フォルダを削除します
-     * 
-     * @param index フォルダの順序
-     * @return 削除されたフォルダ
-     */
-//    @Deprecated
-//    Folder removeContentFolderAt(int index);
-//    
-//    @Deprecated
-//    int indexOfFolder(Folder folder);
-//    
     boolean removeChildFolder(Folder folder);
     
+    /**
+     * 他の親のフォルダを追加します。
+     * 
+     * @param folder
+     */
     void addChildFolder(Folder folder);
     
     /**
@@ -44,5 +34,11 @@ public interface FoldersContainer {
     
     void removeFoldersChangeListener(ChangeListener listener);
     
+    /**
+     * 新しいフォルダを追加します。
+     * 
+     * @param type フォルダの型
+     * @return 追加されたフォルダ
+     */
     Folder createChildFolder(CollectionType type);
 }
