@@ -192,6 +192,11 @@ public class RemoteSource {
         return pathBuilder.toString();
     }
 
+    @Override
+    public String toString() {
+        return "NCBI Search";
+    }
+    
     // ~~~~
     // Utils
     // ~~~~

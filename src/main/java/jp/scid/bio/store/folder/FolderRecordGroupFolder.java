@@ -32,36 +32,51 @@ public class FolderRecordGroupFolder extends AbstractFolder implements FoldersCo
     }
     
     public Folder createChildFolder(CollectionType type) {
-        return source.createFolder(type, id(), this);
-    }
-    
-    public Folder createContentFolder(CollectionType type) {
-        Folder folder = source.createFolder(type, id(), this);
-        folder.save();
-        return folder;
+        try {
+            return source.createFolder(type, id(), this);
+        }
+        finally {
+            folrdersChangeSupport.fireStateChange();
+        }
     }
     
     public boolean removeChildFolder(Folder folder) {
-        if (this.equals(folder.getParent())) {
-            return false;
-        }
+        boolean result = false;
         
-        boolean result = folder.delete();
-        if (result) {
-            folrdersChangeSupport.fireStateChange();
+        if (id().equals(folder.parentId())) {
+            result = folder.delete();
         }
-        
+        folrdersChangeSupport.fireStateChange();
+
         return result;
     }
     
     public boolean addChildFolder(Folder folder) {
-        folder.setParent(this);
-        folrdersChangeSupport.fireStateChange();
-        return true;
+        if (id() == null) {
+            throw new IllegalStateException("parent folder must be saved");
+        }
+        else if (!canAddChild(folder)) {
+            throw new IllegalArgumentException("reclusive path");
+        }
+        
+        folder.setParentId(id());
+        
+        try {
+            return folder.save();
+        }
+        finally {
+            folrdersChangeSupport.fireStateChange();
+        }
     }
 
     public boolean canAddChild(Folder folder) {
-        // TODO Auto-generated method stub
-        return false;
+        Long childId = folder.id();
+        if (childId == null) {
+            throw new IllegalArgumentException("id of folder must be specified");
+        }
+        
+        List<Long> idPath = source.getIdPathToRoot(id());
+        
+        return !idPath.contains(childId);
     }
 }

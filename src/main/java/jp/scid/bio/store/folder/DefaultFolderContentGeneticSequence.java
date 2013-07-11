@@ -32,7 +32,9 @@ public class DefaultFolderContentGeneticSequence extends AbstractRecordModel<Col
     
     @Override
     public boolean save() {
-        return content.save() && super.save();
+        boolean result = content.save();
+        result &= super.save();
+        return result;
     }
     
     @Override

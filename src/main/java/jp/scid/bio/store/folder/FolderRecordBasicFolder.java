@@ -34,8 +34,9 @@ public class FolderRecordBasicFolder extends AbstractFolder implements Importabl
         
         for (GeneticSequence s: sequences) {
             FolderContentGeneticSequence content = createContents(s);
-            list.add(content);
             content.save();
+            
+            list.add(content);
         }
         
         fireSequencesChange();

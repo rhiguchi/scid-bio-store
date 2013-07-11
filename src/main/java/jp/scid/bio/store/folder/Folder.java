@@ -8,22 +8,22 @@ import jp.scid.bio.store.sequence.GeneticSequenceSource;
 
 /**
  * シーケンスデータを格納したフォルダの構造定義
- * @author higuchi
+ * @author HIGUCHI Ryusuke
  *
  */
 public interface Folder extends RecordModel, GeneticSequenceSource {
     /**
-     * 親フォルダを返します。
+     * 親フォルダの ID を返します。
      * @return 親フォルダ。ルートフォルダで親がいないときは {@code null} 。
      */
-    FoldersContainer getParent();
+    Long parentId();
     
     /**
-     * 親フォルダを設定します。
+     * 親フォルダの ID を設定します。
      * 
-     * @param newParent null ではない新しい親
+     * @param parentId フォルダ ID。ルートフォルダのときは {@code null}
      */
-    void setParent(FoldersContainer newParent);
+    void setParentId(Long parentId);
     
     /**
      * このフォルダの名前を設定します。
@@ -32,13 +32,6 @@ public interface Folder extends RecordModel, GeneticSequenceSource {
      */
     void setName(String newName);
 
-    /**
-     * 親からこのフォルダを除去します。
-     * 
-     * 親から変化イベントが発行されます
-     */
-    void deleteFromParent();
-    
     /**
      * このフォルダのコンテンツとなる配列情報を返します。
      */

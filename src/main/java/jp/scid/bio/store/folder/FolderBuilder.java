@@ -1,13 +1,11 @@
 package jp.scid.bio.store.folder;
 
-import jp.scid.bio.store.folder.AbstractFolder.Source;
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
 
 public class FolderBuilder {
     private final AbstractFolder.Source folderSource;
     private CollectionType collectionType;
     private FolderRecord record;
-    private FoldersContainer owner;
     
     public FolderBuilder(AbstractFolder.Source folderSource) {
         if (folderSource == null)
@@ -31,13 +29,8 @@ public class FolderBuilder {
         this.record = record;
     }
     
-    public void setParent(FoldersContainer owner) {
-        this.owner = owner;
-    }
 
     public Folder build() {
-        AbstractFolder folder = collectionType.createFolder(record, folderSource);
-        folder.setParent(owner);
-        return folder;
+        return collectionType.createFolder(record, folderSource);
     }
 }

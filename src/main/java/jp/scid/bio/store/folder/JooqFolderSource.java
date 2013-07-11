@@ -92,15 +92,15 @@ public class JooqFolderSource implements AbstractFolder.Source {
         if (sequence.id() == null) {
             throw new IllegalStateException("id of sequence must not be null");
         }
+        if (folder.id() == null) {
+            throw new IllegalStateException("id of folder must not be null");
+        }
         
         CollectionItemRecord item = create.newRecord(Tables.COLLECTION_ITEM);
         item.setFolderId(folder.id());
         item.setGeneticSequenceId(sequence.id());
         
-        DefaultFolderContentGeneticSequence content =
-                new DefaultFolderContentGeneticSequence(sequence, item);
-        content.save();
-        return content;
+        return new DefaultFolderContentGeneticSequence(sequence, item);
     }
     
     public FolderContentGeneticSequence addSequence(GeneticSequence sequence, Folder folder) {
@@ -141,6 +141,28 @@ public class JooqFolderSource implements AbstractFolder.Source {
         
         FolderContentGeneticSequenceMapper mapper = new FolderContentGeneticSequenceMapper(geneticSequenceSource);
         return result.map(mapper);
+    }
+    
+    public List<Long> getIdPathToRoot(long folderId) {
+        LinkedList<Long> path = new LinkedList<Long>();
+        path.add(folderId);
+        return getIdPathToRoot(path, folderId);
+    }
+    
+    private List<Long> getIdPathToRoot(List<Long> path, long folderId) {
+        Long parentId = create.select(Tables.FOLDER.PARENT_ID)
+                .from(Tables.FOLDER)
+                .where(Tables.FOLDER.ID.eq(folderId))
+                .fetchOne(Tables.FOLDER.PARENT_ID);
+        if (parentId == null) {
+            return path;
+        }
+        if (path.contains(parentId)) {
+            throw new IllegalStateException("loop path: " + path);
+        }
+        
+        path.add(0, parentId);
+        return getIdPathToRoot(path, parentId);
     }
     
     private List<Long> retrieveDescendantFolderIds(long start) {
@@ -188,7 +210,6 @@ public class JooqFolderSource implements AbstractFolder.Source {
             if (parent == null) throw new IllegalArgumentException("parent must not be null");
             
             builder = new FolderBuilder(source);
-            builder.setParent(parent);
         }
         
         @Override

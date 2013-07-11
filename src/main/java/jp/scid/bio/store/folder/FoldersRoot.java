@@ -32,15 +32,16 @@ public class FoldersRoot implements FoldersContainer {
     
     @Override
     public Folder createChildFolder(CollectionType type) {
-        return folderSource.createFolder(type, null, this);
+        try {
+            return folderSource.createFolder(type, null, this);
+        }
+        finally {
+            folrdersChangeSupport.fireStateChange();
+        }
     }
     
     @Override
     public boolean removeChildFolder(Folder folder) {
-        if (this.equals(folder.getParent())) {
-            return false;
-        }
-        
         boolean result = folder.delete();
         if (result) {
             folrdersChangeSupport.fireStateChange();
@@ -51,9 +52,19 @@ public class FoldersRoot implements FoldersContainer {
 
     @Override
     public boolean addChildFolder(Folder folder) {
-        folder.setParent(this);
-        folrdersChangeSupport.fireStateChange();
-        return true;
+        // not need to change parent
+        if (folder.parentId() == null) {
+            return false;
+        }
+        
+        folder.setParentId(null);
+
+        try {
+            return folder.save();
+        }
+        finally {
+            folrdersChangeSupport.fireStateChange();
+        }
     }
     
     @Override
@@ -62,7 +73,6 @@ public class FoldersRoot implements FoldersContainer {
     }
 
     public boolean canAddChild(Folder folder) {
-        // TODO Auto-generated method stub
-        return false;
+        return true;
     }
 }
