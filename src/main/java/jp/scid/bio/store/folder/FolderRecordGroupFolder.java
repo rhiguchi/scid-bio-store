@@ -1,5 +1,7 @@
 package jp.scid.bio.store.folder;
 
+import java.util.List;
+
 import javax.swing.event.ChangeListener;
 
 import jp.scid.bio.store.base.ChangeEventSupport;
@@ -25,7 +27,7 @@ public class FolderRecordGroupFolder extends AbstractFolder implements FoldersCo
     }
     
     @Override
-    public Iterable<Folder> getChildFolders() {
+    public List<Folder> getChildFolders() {
         return source.retrieveFolderChildren(this, id());
     }
     
@@ -52,8 +54,14 @@ public class FolderRecordGroupFolder extends AbstractFolder implements FoldersCo
         return result;
     }
     
-    public void addChildFolder(Folder folder) {
+    public boolean addChildFolder(Folder folder) {
         folder.setParent(this);
         folrdersChangeSupport.fireStateChange();
+        return true;
+    }
+
+    public boolean canAddChild(Folder folder) {
+        // TODO Auto-generated method stub
+        return false;
     }
 }

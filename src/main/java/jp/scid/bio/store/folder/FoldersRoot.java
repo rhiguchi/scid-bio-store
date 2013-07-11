@@ -1,5 +1,7 @@
 package jp.scid.bio.store.folder;
 
+import java.util.List;
+
 import javax.swing.event.ChangeListener;
 
 import jp.scid.bio.store.base.ChangeEventSupport;
@@ -24,7 +26,7 @@ public class FoldersRoot implements FoldersContainer {
     }
     
     @Override
-    public Iterable<Folder> getChildFolders() {
+    public List<Folder> getChildFolders() {
         return folderSource.retrieveFolderChildren(this, null);
     }
     
@@ -48,13 +50,19 @@ public class FoldersRoot implements FoldersContainer {
     }
 
     @Override
-    public void addChildFolder(Folder folder) {
+    public boolean addChildFolder(Folder folder) {
         folder.setParent(this);
         folrdersChangeSupport.fireStateChange();
+        return true;
     }
     
     @Override
     public String toString() {
         return "User Collections";
+    }
+
+    public boolean canAddChild(Folder folder) {
+        // TODO Auto-generated method stub
+        return false;
     }
 }

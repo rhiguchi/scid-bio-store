@@ -3,6 +3,9 @@ package jp.scid.bio.store.folder;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import jp.scid.bio.store.jooq.tables.records.FolderRecord;
 import jp.scid.bio.store.sequence.FolderContentGeneticSequence;
@@ -24,6 +27,19 @@ public class FolderRecordBasicFolder extends AbstractFolder implements Importabl
         
         fireSequencesChange();
         return content;
+    }
+    
+    public List<FolderContentGeneticSequence> addAllSequences(Collection<? extends GeneticSequence> sequences) {
+        List<FolderContentGeneticSequence> list = new ArrayList<FolderContentGeneticSequence>(sequences.size());
+        
+        for (GeneticSequence s: sequences) {
+            FolderContentGeneticSequence content = createContents(s);
+            list.add(content);
+            content.save();
+        }
+        
+        fireSequencesChange();
+        return list;
     }
     
     public FolderContentGeneticSequence importSequence(File file) throws IOException, ParseException {

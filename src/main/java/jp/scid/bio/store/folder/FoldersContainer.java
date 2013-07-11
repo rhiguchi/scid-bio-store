@@ -1,5 +1,7 @@
 package jp.scid.bio.store.folder;
 
+import java.util.List;
+
 import javax.swing.event.ChangeListener;
 
 /**
@@ -22,13 +24,20 @@ public interface FoldersContainer {
      * 
      * @param folder
      */
-    void addChildFolder(Folder folder);
+    boolean addChildFolder(Folder folder);
+    
+    /**
+     * 指定したフォルダを子フォルダとして追加できるかを返します
+     * @param folder
+     * @return フォルダが自分の親または先祖ではないとき {@code true} 。
+     */
+    boolean canAddChild(Folder folder);
     
     /**
      * 子フォルダを返します
      * @return 子フォルダ
      */
-    Iterable<Folder> getChildFolders();
+    List<Folder> getChildFolders();
 
     void addFoldersChangeListener(ChangeListener listener);
     
