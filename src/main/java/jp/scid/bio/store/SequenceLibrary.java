@@ -102,13 +102,28 @@ public class SequenceLibrary implements GeneticSequenceSource, ImportableSequenc
     }
 
     public GeneticSequence importSequence(File file) throws IOException, ParseException {
-        JooqGeneticSequence sequence = createGeneticSequence();
-        sequence.setFileUri(file);
+        JooqGeneticSequence sequence = createFromFile(file);
         sequence.reload();
         sequence.save();
-        
         sequenceChangeSupport.fireStateChange();
+        
+        sequence.saveFileToLibrary();
+        sequenceChangeSupport.fireStateChange();
+        
         return sequence;
+    }
+    
+//    @Override
+    public JooqGeneticSequence createFromFile(File file) {
+        JooqGeneticSequence sequence = createGeneticSequence();
+        sequence.setFileUri(file);
+        return sequence;
+    }
+    
+//    @Override
+    public void addGeneticSequence(GeneticSequence geneticSequence) {
+        geneticSequence.save();
+        sequenceChangeSupport.fireStateChange();
     }
     
     public boolean deleteSequence(GeneticSequence sequence, boolean withFile) {

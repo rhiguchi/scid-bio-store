@@ -78,17 +78,18 @@ public class FileLibrary implements JooqGeneticSequence.Source {
         String baseName =
             getBaseName(record.getName(), record.getAccession(), record.getDefinition());
 
+        
         File outFile = new File(sequenceFilesRoot, baseName + extension);
-        int baseCount = 1;
+        final File outFileParent = outFile.getParentFile();
         
-        File outFileDir = outFile.getParentFile();
-        if (!outFileDir.exists()) {
-            outFile.getParentFile().mkdirs();
+        // preparing directories
+        if (!outFileParent.exists()) {
+            outFileParent.mkdirs();
         }
+        if (!outFileParent.canWrite())
+            throw new IOException(format("writing to dir %s is not allowed", outFileParent));
         
-        if (!outFileDir.canWrite())
-            throw new IOException(format("writing to dir %s is not allowed", outFile));
-        
+        int baseCount = 1;
         while (!outFile.createNewFile()) {
             outFile = new File(sequenceFilesRoot, baseName + " " + baseCount++ + extension);
         }

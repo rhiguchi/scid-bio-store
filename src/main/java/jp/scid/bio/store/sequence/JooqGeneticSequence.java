@@ -25,26 +25,43 @@ public class JooqGeneticSequence extends AbstractRecordModel<GeneticSequenceReco
 
     @Override
     public File getFile() {
+        URI uri = getFileUriAsUri();
+        
+        if (uri == null) {
+            return null;
+        }
+        if (!uri.isAbsolute()) {
+            return new File(source.getSequenceFilesRootDir(), uri.getPath());
+        }
+        return new File(uri);
+    }
+
+    private URI getFileUriAsUri() {
         String uriString = record.getFileUri();
         if (uriString == null) {
             return null;
         }
-        URI uri = URI.create(uriString);
-        File file = new File(uri);
-        
-        if (!file.isAbsolute()) {
-            file = new File(source.getSequenceFilesRootDir(), file.getPath());
-        }
-        return file;
+        return URI.create(uriString);
     }
     
     public void setFileUri(File file) {
+        URI uri;
         if (file == null) {
-            record.setFileUri(null);
-            return;
+            uri = null;
         }
-        
-        record.setFileUri(file.toURI().toString());
+        else {
+            uri = file.toURI();
+        }
+        setFileUri(uri);
+    }
+    
+    private void setFileUri(URI uri) {
+        if (uri == null) {
+            record.setFileUri(null);
+        }
+        else {
+            record.setFileUri(uri.toString());
+        }
     }
 
     @Override
@@ -57,9 +74,15 @@ public class JooqGeneticSequence extends AbstractRecordModel<GeneticSequenceReco
         }
         
         File newFile = source.saveFileToLibrary(record, file);
-        setFileUri(newFile);
+        URI uri = source.getSequenceFilesRootDir().toURI().relativize(newFile.toURI());
+        setFileUri(uri);
         
         return save();
+    }
+    
+    public boolean isFileStoredInLibray() {
+        URI uri = getFileUriAsUri();
+        return uri != null && !uri.isAbsolute();
     }
     
     public void reload() throws IOException, ParseException {
@@ -69,6 +92,14 @@ public class JooqGeneticSequence extends AbstractRecordModel<GeneticSequenceReco
         }
         
         source.loadSequence(record, file);
+    }
+    
+    @Override
+    public boolean deleteFileFromLibrary() {
+        if (!isFileStoredInLibray()) {
+            return false;
+        }
+        return getFile().delete();
     }
     
     @Override

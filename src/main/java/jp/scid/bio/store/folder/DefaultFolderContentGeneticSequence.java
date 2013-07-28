@@ -38,6 +38,11 @@ public class DefaultFolderContentGeneticSequence extends AbstractRecordModel<Col
     }
     
     @Override
+    public boolean deleteFileFromLibrary() {
+        return false;
+    }
+    
+    @Override
     public void reload() throws IOException, ParseException {
         content.reload();
     }
@@ -47,6 +52,11 @@ public class DefaultFolderContentGeneticSequence extends AbstractRecordModel<Col
         return content.saveFileToLibrary();
     }
 
+    @Override
+    public boolean isFileStoredInLibray() {
+        return content.isFileStoredInLibray();
+    }
+    
     @Override
     public Long folderId() {
         return record.getFolderId();

@@ -38,6 +38,20 @@ public interface GeneticSequence extends RecordModel {
     boolean saveFileToLibrary() throws IOException;
     
     /**
+     * 元ファイルがライブラリの管理下にあるファイルかどうかを返します。
+     * @return ライブラリ内のファイルであるときは {@code true}
+     */
+    boolean isFileStoredInLibray();
+    
+    /**
+     * ライブラリに保存してあるソースファイルを削除します。
+     * 
+     * ソースファイルがライブラリに存在していなければ、なにもせず {@code false} が返されます。
+     * @return ファイルが存在し、削除されたら {@code true}
+     */
+    boolean deleteFileFromLibrary();
+    
+    /**
      * この配列情報の元データの場所を返します。
      * 
      * @return 元データファイルの場所。ローカルファイルにないときは {@code null} 。

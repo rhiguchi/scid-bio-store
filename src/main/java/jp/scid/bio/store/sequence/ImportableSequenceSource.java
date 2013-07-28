@@ -19,4 +19,19 @@ public interface ImportableSequenceSource extends GeneticSequenceSource {
      * @throws ParseException ファイルの書式が正しくない時
      */
     GeneticSequence importSequence(File file) throws IOException, ParseException;
+    
+//    /**
+//     * 配列情報を、ソースファイルを指定して作成します。
+//     * 
+//     * @param file 
+//     * @return 配列情報
+//     */
+//    GeneticSequence createFromFile(File file);
+//
+//    /**
+//     * 配列情報を追加します
+//     * 
+//     * @param geneticSequence
+//     */
+//    void addGeneticSequence(GeneticSequence geneticSequence);
 }
