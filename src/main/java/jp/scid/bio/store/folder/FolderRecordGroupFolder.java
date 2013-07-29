@@ -32,12 +32,10 @@ public class FolderRecordGroupFolder extends AbstractFolder implements FoldersCo
     }
     
     public Folder createChildFolder(CollectionType type) {
-        try {
-            return source.createFolder(type, id(), this);
-        }
-        finally {
-            folrdersChangeSupport.fireStateChange();
-        }
+        Folder folder = source.createFolder(type, id(), this);
+        folder.save();
+        folrdersChangeSupport.fireStateChange();
+        return folder;
     }
     
     public boolean removeChildFolder(Folder folder) {

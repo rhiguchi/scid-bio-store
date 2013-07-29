@@ -32,12 +32,10 @@ public class FoldersRoot implements FoldersContainer {
     
     @Override
     public Folder createChildFolder(CollectionType type) {
-        try {
-            return folderSource.createFolder(type, null, this);
-        }
-        finally {
-            folrdersChangeSupport.fireStateChange();
-        }
+        Folder folder = folderSource.createFolder(type, null, this);
+        folder.save();
+        folrdersChangeSupport.fireStateChange();
+        return folder;
     }
     
     @Override
