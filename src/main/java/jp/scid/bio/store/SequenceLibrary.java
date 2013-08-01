@@ -19,6 +19,8 @@ import java.util.concurrent.Callable;
 import javax.swing.event.ChangeListener;
 
 import jp.scid.bio.store.base.ChangeEventSupport;
+import jp.scid.bio.store.folder.CollectionType;
+import jp.scid.bio.store.folder.Folder;
 import jp.scid.bio.store.folder.FoldersRoot;
 import jp.scid.bio.store.folder.JooqFolderSource;
 import jp.scid.bio.store.jooq.Tables;
@@ -178,6 +180,14 @@ public class SequenceLibrary implements GeneticSequenceSource, ImportableSequenc
     }
     
     // Folders
+    public List<Folder> getChildFolders(Long id) {
+        return folderSource.retrieveFolderChildren(id);
+    }
+    
+    public Folder createFolder(CollectionType type, Long parentId) {
+        return folderSource.createFolder(type, parentId);
+    }
+    
     public FoldersRoot getUsersFolderRoot() {
         return usersFolderRoot;
     }

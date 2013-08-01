@@ -28,14 +28,11 @@ public class FolderRecordGroupFolder extends AbstractFolder implements FoldersCo
     
     @Override
     public List<Folder> getChildFolders() {
-        return source.retrieveFolderChildren(this, id());
+        return source.retrieveFolderChildren(id());
     }
     
     public Folder createChildFolder(CollectionType type) {
-        Folder folder = source.createFolder(type, id(), this);
-        folder.save();
-        folrdersChangeSupport.fireStateChange();
-        return folder;
+        return source.createFolder(type, id());
     }
     
     public boolean removeChildFolder(Folder folder) {

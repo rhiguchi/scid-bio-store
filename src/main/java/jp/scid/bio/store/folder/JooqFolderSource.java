@@ -36,7 +36,7 @@ public class JooqFolderSource implements AbstractFolder.Source {
     }
 
     @Override
-    public Folder createFolder(CollectionType type, Long parentFolderId, FoldersContainer parent) {
+    public Folder createFolder(CollectionType type, Long parentFolderId) {
         if (type == null) throw new IllegalArgumentException("type must not be null");
         
         FolderRecord folderRecord = create.newRecord(Tables.FOLDER);
@@ -44,7 +44,7 @@ public class JooqFolderSource implements AbstractFolder.Source {
         folderRecord.setType(type.getDbValue());
         folderRecord.setParentId(parentFolderId);
         
-        return new RootFolderMapper(this, parent).map(folderRecord);
+        return new RootFolderMapper(this).map(folderRecord);
     }
     
     protected String getNewFolderName(CollectionType type) {
@@ -52,12 +52,12 @@ public class JooqFolderSource implements AbstractFolder.Source {
     }
 
     @Override
-    public List<Folder> retrieveFolderChildren(FoldersContainer parent, Long parentFolderId) {
+    public List<Folder> retrieveFolderChildren(Long parentFolderId) {
         if (parentFolderId == null) {
-            return retrieveRootFolders(parent);
+            return retrieveRootFolders();
         }
         
-        RootFolderMapper mapper = new RootFolderMapper(this, parent);
+        RootFolderMapper mapper = new RootFolderMapper(this);
         
         Result<FolderRecord> result = create.selectFrom(Tables.FOLDER)
                 .where(FOLDER.PARENT_ID.eq(parentFolderId))
@@ -65,8 +65,8 @@ public class JooqFolderSource implements AbstractFolder.Source {
         return result.map(mapper);
     }
     
-    public List<Folder> retrieveRootFolders(FoldersContainer parent) {
-        RootFolderMapper mapper = new RootFolderMapper(this, parent);
+    public List<Folder> retrieveRootFolders() {
+        RootFolderMapper mapper = new RootFolderMapper(this);
         
         Result<FolderRecord> result = create.selectFrom(Tables.FOLDER)
                 .where(FOLDER.PARENT_ID.isNull())
@@ -205,9 +205,8 @@ public class JooqFolderSource implements AbstractFolder.Source {
     static class RootFolderMapper implements RecordMapper<FolderRecord, Folder> {
         private final FolderBuilder builder;
         
-        public RootFolderMapper(AbstractFolder.Source source, FoldersContainer parent) {
+        public RootFolderMapper(AbstractFolder.Source source) {
             if (source == null) throw new IllegalArgumentException("source must not be null");
-            if (parent == null) throw new IllegalArgumentException("parent must not be null");
             
             builder = new FolderBuilder(source);
         }

@@ -75,9 +75,9 @@ public abstract class AbstractFolder extends AbstractRecordModel<FolderRecord> i
         
         GeneticSequence createGeneticSequence(File file) throws IOException, ParseException;
         
-        Folder createFolder(CollectionType type, Long parentFolderId, FoldersContainer parent);
+        Folder createFolder(CollectionType type, Long parentFolderId);
         
-        List<Folder> retrieveFolderChildren(FoldersContainer parent, Long parentFolderId);
+        List<Folder> retrieveFolderChildren(Long parentFolderId);
         
         List<FolderContentGeneticSequence> retrieveFolderContents(long folderId);
         

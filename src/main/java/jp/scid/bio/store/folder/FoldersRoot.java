@@ -27,15 +27,12 @@ public class FoldersRoot implements FoldersContainer {
     
     @Override
     public List<Folder> getChildFolders() {
-        return folderSource.retrieveFolderChildren(this, null);
+        return folderSource.retrieveFolderChildren(null);
     }
     
     @Override
     public Folder createChildFolder(CollectionType type) {
-        Folder folder = folderSource.createFolder(type, null, this);
-        folder.save();
-        folrdersChangeSupport.fireStateChange();
-        return folder;
+        return folderSource.createFolder(type, null);
     }
     
     @Override
